@@ -4,9 +4,8 @@ import uuid
 from langchain_core.messages import HumanMessage
 import random
 
-# In a real environment, you would import the orchestrator:
-# from backend.orchestrator.agent_orchestrator import AgentOrchestrator
 from services.rag_service import rag_service
+from services.analytics_service import analytics_service
 
 router = APIRouter()
 
@@ -77,12 +76,27 @@ async def process_claim(request: ClaimRequest):
             rationale += f" Invoice QR Code scanned & matched with database record {request.order}. Cumulative trust score boosted."
             ai_score = min(100, ai_score + 5)
         
-    return ClaimResponse(
-        claim_id=claim_id,
-        status="Success",
-        ai_score=ai_score,
-        decision=decision,
-        rationale=rationale,
-        policy_applied=policy,
-        self_healing_action=self_healing
+    # 4. Final Output Generation
+    result = {
+        "claim_id": claim_id,
+        "status": "Success",
+        "ai_score": ai_score,
+        "decision": decision,
+        "rationale": rationale,
+        "policy_applied": policy,
+        "self_healing_action": self_healing
+    }
+    
+    # Push unified data to Elasticsearch (One Place for Analysis)
+    # Fire and forget (in a real app, use BackgroundTasks)
+    asyncio.create_task(
+        analytics_service.log_claim_analysis(
+            claim_id=claim_id,
+            user_id="customer_123", # Mock user id
+            ai_score=ai_score,
+            decision=decision,
+            policy_applied=policy
+        )
     )
+    
+    return result
