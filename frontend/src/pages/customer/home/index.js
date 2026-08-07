@@ -206,7 +206,7 @@ export function renderCustomerHome() {
           <!-- 3. Invoice Document (Pipeline B) -->
           <div style="background:#f0fdf4; border:2px solid #1e293b; border-radius:12px; padding:12px;">
             <label style="font-size:0.85rem; font-weight:800; color:#166534; display:block; margin-bottom:6px;">3. Upload Invoice / Receipt (Pipeline B - Sandboxed)</label>
-            <input type="file" id="intake-invoice" accept=".pdf,.png,.jpg,.jpeg" required style="width:100%; font-size:0.82rem;">
+            <input type="file" id="intake-invoice" accept=".pdf,.png,.jpg,.jpeg" style="width:100%; font-size:0.82rem;">
             <div id="invoice-file-name" style="margin-top:6px; font-size:0.78rem; color:#15803d; font-weight:700;"></div>
           </div>
 
@@ -463,7 +463,15 @@ window.cxExecute5StepPipeline = async function(event) {
   const desc = document.getElementById('intake-desc')?.value || '';
   const photo = document.getElementById('captured-photo-data')?.value || '';
   const video = document.getElementById('captured-video-data')?.value || '';
-  const invoiceName = document.getElementById('intake-invoice')?.files[0]?.name || '';
+  let invoiceName = document.getElementById('intake-invoice')?.files[0]?.name || '';
+  
+  // Mobile browser fallback: If the OS cleared the file input memory but we successfully ran OCR
+  if (!invoiceName) {
+    const nameText = document.getElementById('invoice-file-name')?.innerText || '';
+    if (nameText.includes('📄')) {
+      invoiceName = nameText.split('\\n')[0].replace('📄', '').trim();
+    }
+  }
 
   const form = document.getElementById('intake-form');
   const stepper = document.getElementById('pipeline-stepper-view');
