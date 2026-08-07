@@ -22,28 +22,30 @@ if (!window.cxSystemLogs) {
 
 export function renderAdminDashboard() {
   const escalationQueue = MOCK_CLAIMS.filter(c => c.score >= 50 && c.score < 80);
-  const fraudQueue      = MOCK_CLAIMS.filter(c => c.score < 50);
+  const fraudQueue = MOCK_CLAIMS.filter(c => c.score < 50);
 
   return `
     <div>
-      <!-- Admin Header -->
-      <div class="page-header" style="background:linear-gradient(135deg, #0f172a, #1e293b); padding:24px; border-radius:20px; color:#fff; margin-bottom:24px;">
-        <div class="page-header__left">
-          <span style="background:rgba(99,102,241,0.25); color:#818cf8; font-size:0.72rem; font-weight:700; padding:4px 12px; border-radius:12px; text-transform:uppercase;">
-            Admin Ops — Platform Control Center
-          </span>
-          <h1 style="margin-top:8px; font-size:1.7rem; font-weight:800; color:#fff;">Platform Control Center</h1>
-          <p style="color:#94a3b8; font-size:0.88rem; margin-top:2px;">
-            Monitor 13 AI agents, manage escalation queue, inspect audit logs, and configure scoring thresholds.
-          </p>
-        </div>
-        <div style="display:flex; gap:10px; flex-wrap:wrap;">
-          <button class="btn btn-secondary" onclick="cxNavigate('agents')" id="btn-agent-monitor">
-            🤖 Agent Fleet Monitor
-          </button>
-          <button class="btn btn-primary" onclick="cxNavigate('analytics')" id="btn-analytics">
-            📊 Analytics & RL Insights
-          </button>
+      <!-- Admin Header (Pinned Board Card style) -->
+      <div class="rc-card rc-card-blue" style="background:linear-gradient(135deg, #f5b444ff, #f59e0b); padding:24px; color:#fff; border:2.5px solid #1e293b; box-shadow:0 6px 0 #1e293b; margin-bottom:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
+          <div class="page-header__left">
+            <span style="background:rgba(41, 39, 46, 0.25); color:#818cf8; font-size:0.72rem; font-weight:800; padding:4px 12px; border-radius:12px; text-transform:uppercase; border:1.5px solid #818cf8;">
+              Admin Ops — Platform Control Center
+            </span>
+            <h1 style="margin-top:8px; font-size:1.7rem; font-weight:800; color:#fff; margin-bottom:4px;">Platform Control Center</h1>
+            <p style="color:#0a090bff; font-size:0.88rem; margin:0;">
+              Monitor 13 AI agents, manage escalation queue, inspect audit logs, and configure scoring thresholds.
+            </p>
+          </div>
+          <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <button class="btn btn-secondary" onclick="cxNavigate('agents')" id="btn-agent-monitor" style="border:2px solid #1e293b; box-shadow:3px 3px 0 #1e293b; color:#1e293b; font-weight:800;">
+              🤖 Agent Fleet Monitor
+            </button>
+            <button class="btn btn-primary" onclick="cxNavigate('analytics')" id="btn-analytics" style="border:2px solid #1e293b; box-shadow:3px 3px 0 #1e293b; font-weight:800;">
+              📊 Analytics & RL Insights
+            </button>
+          </div>
         </div>
       </div>
 
@@ -235,8 +237,8 @@ export function renderAdminDashboard() {
           </div>
           <div class="card__body">
             ${fraudQueue.length === 0
-              ? `<p style="color:var(--cx-text-muted); font-size:0.85rem;">No fraud-flagged cases in queue.</p>`
-              : fraudQueue.map(c => `
+      ? `<p style="color:var(--cx-text-muted); font-size:0.85rem;">No fraud-flagged cases in queue.</p>`
+      : fraudQueue.map(c => `
                 <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--cx-border);">
                   <div>
                     <div style="font-family:var(--cx-font-mono); font-weight:700; font-size:0.82rem; color:var(--cx-danger);">${c.id}</div>
@@ -248,7 +250,7 @@ export function renderAdminDashboard() {
                   </div>
                 </div>
               `).join('')
-            }
+    }
             <p style="font-size:0.75rem; color:var(--cx-text-muted); margin-top:10px;">
               Anti-Fabrication Engine blocked gallery uploads. Dynamic challenges defeated ${STATS.fraudDetected} attempts this month.
             </p>
@@ -294,13 +296,13 @@ export function renderAdminDashboard() {
         </div>
         <div class="card__body" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:10px;">
           ${[
-            { icon: '📋', name: 'Return & Refund Policy',   version: 'v2.4', status: 'active' },
-            { icon: '🛡️', name: 'Warranty Terms',          version: 'v1.8', status: 'active' },
-            { icon: '🚚', name: 'Delivery SLA Agreement',  version: 'v3.1', status: 'active' },
-            { icon: '💳', name: 'Billing Dispute Policy',  version: 'v1.2', status: 'active' },
-            { icon: '📞', name: 'Subscription Terms',      version: 'v2.0', status: 'active' },
-            { icon: '🔒', name: 'GDPR / CCPA Compliance',  version: 'v4.0', status: 'active' },
-          ].map(p => `
+      { icon: '📋', name: 'Return & Refund Policy', version: 'v2.4', status: 'active' },
+      { icon: '🛡️', name: 'Warranty Terms', version: 'v1.8', status: 'active' },
+      { icon: '🚚', name: 'Delivery SLA Agreement', version: 'v3.1', status: 'active' },
+      { icon: '💳', name: 'Billing Dispute Policy', version: 'v1.2', status: 'active' },
+      { icon: '📞', name: 'Subscription Terms', version: 'v2.0', status: 'active' },
+      { icon: '🔒', name: 'GDPR / CCPA Compliance', version: 'v4.0', status: 'active' },
+    ].map(p => `
             <div style="padding:12px; border-radius:10px; background:var(--cx-bg-input); border:1px solid var(--cx-border);">
               <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
                 <span>${p.icon}</span>
@@ -329,7 +331,7 @@ export function renderAdminDashboard() {
 }
 
 // Log Filtering Helpers
-window.cxFilterLogLevel = function(level) {
+window.cxFilterLogLevel = function (level) {
   const rows = document.querySelectorAll('.log-row');
   rows.forEach(r => {
     if (level === 'ALL' || r.dataset.level === level) {
@@ -340,7 +342,7 @@ window.cxFilterLogLevel = function(level) {
   });
 };
 
-window.cxFilterLogs = function() {
+window.cxFilterLogs = function () {
   const query = document.getElementById('log-search-input')?.value?.toLowerCase() || '';
   const rows = document.querySelectorAll('.log-row');
   rows.forEach(r => {
@@ -353,7 +355,7 @@ window.cxFilterLogs = function() {
   });
 };
 
-window.cxSimulateLiveLog = function() {
+window.cxSimulateLiveLog = function () {
   const events = [
     { level: 'AUDIT', agent: 'Agent #10 (Workflow Execution)', caseId: 'CLM-2848', event: 'REPLACEMENT_DISPATCHED', detail: 'Score: 91 (>80). Replacement laptop order #ORD-99120 dispatched via Shipping API.' },
     { level: 'INFO', agent: 'Agent #2 (Evidence Capture)', caseId: 'CLM-2848', event: 'WEBRTC_STREAM_STARTED', detail: 'Live camera session opened. Gallery file picker access restricted.' },
@@ -378,19 +380,19 @@ window.cxSimulateLiveLog = function() {
   }
 };
 
-window.cxAdminApprove = function(caseId) {
+window.cxAdminApprove = function (caseId) {
   alert(`✅ Case ${caseId} APPROVED by Admin.\n\nWorkflow Execution Agent (#10) triggered:\n• Refund / replacement initiated\n• Customer notification queued\n• Audit log entry created\n• Learning Agent (#13) notified for RL feedback cycle`);
 };
 
-window.cxAdminReject = function(caseId) {
+window.cxAdminReject = function (caseId) {
   alert(`❌ Case ${caseId} REJECTED by Admin.\n\nCustomer notification sent.\nAudit log entry created.\nLearning Agent (#13) notified for RL feedback.`);
 };
 
-window.cxAdminViewCase = function(caseId) {
+window.cxAdminViewCase = function (caseId) {
   alert(`📋 Case ${caseId} Full Report:\n\nExplainability Framework Output:\n• Rationale: Score 50-79 — mixed evidence quality\n• Policy References: Return Policy v2.4, Warranty Terms v1.8\n• Confidence Score: 65%\n• Fraud Assessment: Low risk behavioral signals\n• Evidence Summary: Camera-only (Pipeline A) + Invoice (Pipeline B)\n• Resolution Justification: Insufficient auto-resolve confidence\n• Human Override Recommendation: Approve with partial refund\n• Execution Log: Agents 1→2→3→4→5→6→7→8→11 completed`);
 };
 
-window.cxLogout = function() {
+window.cxLogout = function () {
   window.cxIsAuthenticated = false;
   window.cxCurrentRole = null;
   window.cxCurrentUser = null;
