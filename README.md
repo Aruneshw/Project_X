@@ -37,6 +37,7 @@ An **enterprise-grade autonomous customer resolution platform** leveraging **Age
 - [10. Bonus Innovations](#10-bonus-innovations)
 - [11. Evaluation Metrics](#11-evaluation-metrics)
 - [12. Security & Compliance](#12-security--compliance)
+- [13. Team Allocation](#13-team-allocation)
 
 ---
 
@@ -674,3 +675,24 @@ Every automated decision includes:
 - **Fault Tolerance:** Graceful degradation, retry mechanisms
 - **Privacy-by-Design:** Data minimization, anonymization
 - **Compliance-Ready:** GDPR, CCPA, SOC2, HIPAA alignment
+
+---
+
+## 13. Team Allocation
+
+| Team Member(s) | Contribution |
+|---|---|
+| **Arun** | Backend Development, FastAPI APIs, Database Integration, Testing |
+| **Abinandh & Praveen** | Frontend Development, React.js, UI/UX, Customer Portal, Admin Dashboard |
+| **Harish** | Computer Vision, Image-Based Damage Assessment, Document Verification |
+| **Sanjay & Vishnu** | RAG Integration, Knowledge Base, Documentation, API Documentation, Presentation |
+| **Theepak & Guruprasath** | LangGraph/CrewAI, Multi-Agent Development, Agent Collaboration |
+| **Monish & Gokul Kannan** | System Architecture, Workflow Orchestration, System Integration, Deployment |
+
+### Overall Assessment
+
+Team coverage is approximately **95% complete**. Key areas to reinforce:
+
+- ✅ **Testing** — comprehensive unit, integration, and end-to-end test coverage
+- ✅ **Deployment** — CI/CD pipeline and production rollout
+- ✅ **Presentation** — prepare live demo flow, judge Q&A, and time management
