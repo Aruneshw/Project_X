@@ -396,12 +396,22 @@ export function renderAdminDashboard() {
                 <span>${p.icon}</span>
                 <span style="font-weight:700; font-size:0.82rem;">${p.name}</span>
               </div>
-              <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--cx-text-muted);">
-                <span>${p.version}</span>
-                <span style="color:var(--cx-success); font-weight:600;">● ${p.status}</span>
+              <div style="flex:1;">
+                <label style="font-size:0.8rem; font-weight:700; color:#1e293b;">Version</label>
+                <input type="text" id="policy-version" required placeholder="e.g. v2026.1" style="width:100%; padding:8px; border-radius:8px; border:1px solid #cbd5e1;">
               </div>
             </div>
-          `).join('')}
+            <div>
+              <label style="font-size:0.8rem; font-weight:700; color:#1e293b;">PDF File</label>
+              <input type="file" id="policy-file" accept=".pdf" required style="width:100%; font-size:0.8rem;">
+            </div>
+            <button type="submit" class="btn btn-primary" id="btn-upload-submit">Upload & Vectorize →</button>
+          </form>
+          <div id="upload-status" style="margin-top:10px; font-size:0.8rem; font-weight:700;"></div>
+        </div>
+
+        <div class="card__body" id="policy-list-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:10px;">
+          <p style="font-size:0.8rem; color:#64748b;">Loading policies from RAG engine...</p>
         </div>
       </div>
 
@@ -523,3 +533,100 @@ window.cxLogout = function () {
   window.cxCurrentUser = null;
   if (window.cxNavigate) window.cxNavigate('login');
 };
+
+// --- RAG Policy Management Scripts ---
+window.cxTogglePolicyUpload = function() {
+  const container = document.getElementById('policy-upload-container');
+  container.style.display = container.style.display === 'none' ? 'block' : 'none';
+};
+
+window.cxLoadPolicies = async function() {
+  const container = document.getElementById('policy-list-container');
+  if (!container) return;
+  try {
+    const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/v1/policies/');
+    const data = await res.json();
+    
+    if (data.policies && data.policies.length > 0) {
+      container.innerHTML = data.policies.map(p => `
+        <div style="padding:12px; border-radius:10px; background:var(--cx-bg-input); border:1px solid var(--cx-border);">
+          <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
+            <span>📄</span>
+            <span style="font-weight:700; font-size:0.82rem; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${p.document_name}">${p.document_name}</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:0.72rem; color:var(--cx-text-muted);">
+            <span>${p.version}</span>
+            <span style="color:var(--cx-success); font-weight:600;">● active</span>
+          </div>
+          <div style="font-size:0.68rem; color:#64748b; margin-top:4px;">Chunks: ${p.chunks_count} | Type: ${p.policy_type}</div>
+        </div>
+      `).join('');
+    } else {
+      container.innerHTML = '<p style="font-size:0.8rem; color:#64748b;">No policies found. Upload one to build the RAG knowledge base.</p>';
+    }
+  } catch (err) {
+    container.innerHTML = '<p style="font-size:0.8rem; color:#dc2626;">Error loading policies. Is the backend running?</p>';
+  }
+};
+
+window.cxUploadPolicy = async function(event) {
+  event.preventDefault();
+  const btn = document.getElementById('btn-upload-submit');
+  const status = document.getElementById('upload-status');
+  const fileInput = document.getElementById('policy-file');
+  
+  if (!fileInput.files[0]) return;
+  
+  btn.disabled = true;
+  btn.innerText = 'Uploading & Vectorizing...';
+  status.textContent = 'Processing PDF chunks and generating embeddings (FAISS)...';
+  status.style.color = '#4f46e5';
+  
+  const formData = new FormData();
+  formData.append('file', fileInput.files[0]);
+  formData.append('document_name', document.getElementById('policy-doc-name').value);
+  formData.append('policy_type', document.getElementById('policy-type').value);
+  formData.append('version', document.getElementById('policy-version').value);
+  
+  try {
+    const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/v1/policies/upload', {
+      method: 'POST',
+      body: formData
+    });
+    const result = await res.json();
+    if (res.ok) {
+      status.textContent = `✓ Successfully uploaded and vectorized into ${result.policy.chunks_count} chunks.`;
+      status.style.color = '#15803d';
+      document.getElementById('policy-upload-form').reset();
+      window.cxLoadPolicies();
+    } else {
+      status.textContent = 'Error: ' + result.detail;
+      status.style.color = '#dc2626';
+    }
+  } catch (err) {
+    status.textContent = 'Error contacting backend: ' + err.message;
+    status.style.color = '#dc2626';
+  } finally {
+    btn.disabled = false;
+    btn.innerText = 'Upload & Vectorize →';
+  }
+};
+
+window.cxReindexPolicies = async function() {
+  const btn = document.getElementById('btn-reindex-policies');
+  btn.innerText = '🔄 Re-indexing...';
+  try {
+    await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/v1/policies/reindex', { method: 'POST' });
+    alert('Knowledge base reindexed successfully.');
+  } catch (err) {
+    alert('Error reindexing: ' + err.message);
+  }
+  btn.innerText = '🔄 Re-index Policies';
+};
+
+// Initial load
+setTimeout(() => {
+  if (document.getElementById('policy-list-container')) {
+    window.cxLoadPolicies();
+  }
+}, 500);

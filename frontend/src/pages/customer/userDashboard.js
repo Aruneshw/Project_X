@@ -45,6 +45,7 @@ export function renderUserDashboard() {
       </div>
 
       <!-- Active Claim Progress Banner -->
+      ${activeClaim ? `
       <div style="background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:20px;padding:20px 24px;color:#fff;margin-bottom:20px;box-shadow:0 10px 25px rgba(30,27,75,0.2);">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
           <div>
@@ -72,6 +73,7 @@ export function renderUserDashboard() {
           <span><strong>Pipeline:</strong> Camera-Only (A) + Documents (B)</span>
         </div>
       </div>
+      ` : ''}
 
       <!-- 9 Issue Types Grid -->
       <div style="margin-bottom:20px;">
@@ -94,7 +96,7 @@ export function renderUserDashboard() {
       </div>
 
       <!-- Evidence Pipelines Quick Access -->
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;">
+      <div class="grid-responsive" style="margin-bottom:20px;">
         <div onclick="cxNavigate('evidence')" style="background:#fff;border-radius:16px;border:1px solid #e2e8f0;padding:18px;cursor:pointer;transition:all 0.18s ease;" onmouseover="this.style.borderColor='#6366f1';this.style.transform='translateY(-2px)'" onmouseout="this.style.borderColor='#e2e8f0';this.style.transform='none'">
           <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
             <span style="width:38px;height:38px;border-radius:10px;background:#e0e7ff;color:#4f46e5;display:flex;align-items:center;justify-content:center;font-size:18px;">📷</span>

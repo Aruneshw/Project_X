@@ -40,11 +40,11 @@ export function renderCustomerProfile() {
         <form onsubmit="cxSaveProfile(event)" style="display:flex; flex-direction:column; gap:16px; max-width:480px;">
           <div>
             <label style="font-size:0.85rem; font-weight:800; color:#1e293b; display:block; margin-bottom:6px;">Full Name</label>
-            <input type="text" value="${user}" required style="width:100%; padding:10px 12px; border-radius:10px; border:2px solid #1e293b; font-size:0.88rem; outline:none;" />
+            <input type="text" id="profile-name" value="${user}" required style="width:100%; padding:10px 12px; border-radius:10px; border:2px solid #1e293b; font-size:0.88rem; outline:none;" />
           </div>
           <div>
-            <label style="font-size:0.85rem; font-weight:800; color:#1e293b; display:block; margin-bottom:6px;">Email Address</label>
-            <input type="email" value="${user.toLowerCase()}@customer.com" required style="width:100%; padding:10px 12px; border-radius:10px; border:2px solid #1e293b; font-size:0.88rem; outline:none;" />
+            <label style="font-size:0.85rem; font-weight:800; color:#1e293b; display:block; margin-bottom:6px;">Email Address (Auto-Detected)</label>
+            <input type="email" value="${window.cxCurrentUserEmail || ''}" disabled style="width:100%; padding:10px 12px; border-radius:10px; border:2px solid #1e293b; font-size:0.88rem; outline:none; background:#f1f5f9; cursor:not-allowed;" />
           </div>
           <div>
             <label style="font-size:0.85rem; font-weight:800; color:#1e293b; display:block; margin-bottom:6px;">Preferred Notification Channel</label>
@@ -63,7 +63,7 @@ export function renderCustomerProfile() {
   `;
 }
 
-window.cxSaveProfile = function(event) {
+window.cxSaveProfile = async function(event) {
   event.preventDefault();
   showModal({
     title: 'Profile Updated',
@@ -75,4 +75,29 @@ window.cxSaveProfile = function(event) {
       '🔒 Changes reflected in your CRM record',
     ],
   });
+  const name = document.getElementById('profile-name').value;
+  const btn = event.target.querySelector('button[type="submit"]');
+  
+  if (!window.supabase) {
+    alert('✅ Profile details updated locally.');
+    window.cxCurrentUser = name;
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.innerText = 'Saving...';
+  
+  try {
+    const { data, error } = await window.supabase.auth.updateUser({
+      data: { full_name: name }
+    });
+    if (error) throw error;
+    alert('✅ Profile details successfully updated and stored in Supabase.');
+    window.cxCurrentUser = name;
+  } catch (err) {
+    alert('Error updating profile: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.innerText = 'Save Profile';
+  }
 };
