@@ -1,0 +1,81 @@
+{
+  "workflow_name": "Autonomous_Dispute_Resolution_Pipeline",
+  "version": "2.0",
+  "intake_schema": {
+    "step_1_intake": {
+      "complaint_type": {
+        "type": "string",
+        "enum": [
+          "Customer Complaint",
+          "Order Dispute",
+          "Refund Request",
+          "Warranty Claim",
+          "Delivery Issue",
+          "Subscription Cancellation",
+          "Service Escalation",
+          "Product Return",
+          "Billing Dispute"
+        ],
+        "required": true
+      },
+      "order_id": {
+        "type": "string",
+        "pattern": "^ORD-[0-9]{5,10}$",
+        "required": true
+      },
+      "invoice_document": {
+        "type": "file",
+        "allowed_formats": ["pdf", "png", "jpg"],
+        "pipeline": "Pipeline_B_Sandboxed_Doc",
+        "required": true
+      },
+      "visual_evidence": {
+        "type": "camera_live_capture",
+        "allow_gallery": false,
+        "gallery_blocked_policy": "ENFORCED_PLATFORM_WIDE",
+        "pipeline": "Pipeline_A_Camera_Only",
+        "required": true
+      },
+      "defect_description": {
+        "type": "string",
+        "min_length": 10,
+        "required": true
+      }
+    }
+  },
+  "agent_execution_chain": [
+    {
+      "step": 1,
+      "agent_id": 1,
+      "agent_name": "Customer Interaction Agent",
+      "action": "INTENT_AND_ORDER_EXTRACT"
+    },
+    {
+      "step": 2,
+      "agent_id": 2,
+      "agent_name": "Evidence Capture Agent",
+      "action": "LIVE_CAMERA_GATE",
+      "gallery_blocked": true
+    },
+    {
+      "step": 3,
+      "agent_id": 3,
+      "agent_name": "CV Object Detection Agent",
+      "sub_agents": [4],
+      "action": "3LAYER_CV_AND_ANTIFRAUD_CHALLENGE"
+    },
+    {
+      "step": 4,
+      "agent_id": 5,
+      "agent_name": "Evidence Verification Agent",
+      "action": "SANDBOXED_OCR_DOCUMENT_VERIFICATION"
+    },
+    {
+      "step": 5,
+      "agent_id": 8,
+      "agent_name": "Score Evaluation Agent",
+      "sub_agents": [10, 11],
+      "action": "ISOLATED_PIPELINE_SCORE_MERGE_AND_ROUTE"
+    }
+  ]
+}
