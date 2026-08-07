@@ -86,6 +86,30 @@ export function renderAdminDashboard() {
           <div class="stat-card__label">Fraud Blocked (Score < 50)</div>
         </div>
       </div>
+      <!-- Prometheus & Grafana Monitoring Section -->
+      <div class="rc-card rc-card-blue" style="margin-bottom:24px; padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <div>
+            <span style="background:#1e293b; color:#fff; font-size:0.75rem; font-weight:800; padding:4px 12px; border-radius:12px; display:inline-block; margin-bottom:8px;">📈 SYSTEM INFRASTRUCTURE</span>
+            <h2 style="font-size:1.4rem; font-weight:800; color:#1e293b; margin:0 0 4px 0;">Prometheus & Grafana Monitoring</h2>
+            <p style="font-size:0.85rem; color:#64748b; margin:0;">Live metrics feed exposed via /metrics. Embeds directly into Grafana.</p>
+          </div>
+          <button class="btn btn-primary" onclick="window.open('http://localhost:8000/metrics', '_blank')" style="border:2px solid #1e293b; box-shadow:3px 3px 0 #1e293b;">
+            View Raw Prometheus Metrics
+          </button>
+        </div>
+        <div style="background:#0f172a; border-radius:12px; border:2.5px solid #1e293b; padding:2px; height:360px; position:relative; overflow:hidden;">
+          <!-- Simulated Grafana Dashboard embed -->
+          <div style="position:absolute; inset:0; background:url('https://grafana.com/static/assets/img/blog/grafana_dashboard_example_1.png') center/cover no-repeat; opacity:0.6; filter: hue-rotate(190deg) saturate(1.5);"></div>
+          <div style="position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; background:rgba(15,23,42,0.75);">
+            <div style="font-size:3rem; margin-bottom:10px;">📊</div>
+            <h3 style="color:#fff; font-size:1.3rem; margin:0 0 8px 0; font-weight:800;">Grafana Dashboard Initializing...</h3>
+            <p style="color:#94a3b8; font-size:0.85rem; max-width:400px; text-align:center; line-height:1.5;">
+              Connect your Grafana instance to <code style="background:#1e293b; padding:2px 6px; border-radius:4px; color:#38bdf8;">http://backend:8000/metrics</code> to visualize real-time FastApi & AI orchestration metrics.
+            </p>
+          </div>
+        </div>
+      </div>
       
       <!-- Overall & Monthly Platform Status Dashboard (ListContainer cream style) -->
       <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:20px; margin-bottom:24px;">

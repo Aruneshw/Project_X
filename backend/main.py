@@ -14,7 +14,9 @@ from database.vector_db.connection import vector_db
 from api.routes import agent_monitor
 from api.routes import claims
 from api.routes import policies
+from api.routes import auth
 from services.kafka_streamer import streamer
+from prometheus_fastapi_instrumentator import Instrumentator
 
 setup_logging()
 logger = get_logger("main")
@@ -52,9 +54,13 @@ app.add_middleware(
 )
 
 # Mount Routers
+app.include_router(auth.router, prefix="/api/v1/auth/admin", tags=["Admin Auth"])
 app.include_router(agent_monitor.router, prefix="/api/monitor", tags=["Monitoring"])
 app.include_router(claims.router, prefix="/api/v1/claims", tags=["Claims Orchestration"])
 app.include_router(policies.router, prefix="/api/v1/policies", tags=["Policy Administration"])
+
+# Add Prometheus Metrics Exporter
+Instrumentator().instrument(app).expose(app, endpoint="/metrics")
 
 @app.get("/")
 async def root():

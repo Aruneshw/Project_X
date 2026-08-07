@@ -50,11 +50,21 @@ export function renderLogin() {
                   <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z"/>
                 </g>
               </svg>
-              Sign In with Google
+              Sign In with Google (Customers)
             </button>
-            <div style="text-align:center; font-size: 0.75rem; color:#64748b; font-weight:700; margin-top:8px;">
-              Admin access is granted automatically to @cxplatform.io emails.
+
+            <div style="text-align:center; margin:16px 0; border-bottom:2px dashed #cbd5e1; line-height:0.1em;">
+              <span style="background:#fff; padding:0 10px; color:#64748b; font-size:0.75rem; font-weight:800;">OR ADMIN LOGIN</span>
             </div>
+
+            <div>
+              <input type="text" id="admin-id" placeholder="Admin ID" style="width:100%; padding:10px 12px; margin-bottom:10px; border-radius:8px; border:2px solid #1e293b; font-size:0.88rem; outline:none;" />
+              <input type="password" id="admin-password" placeholder="Password" style="width:100%; padding:10px 12px; margin-bottom:12px; border-radius:8px; border:2px solid #1e293b; font-size:0.88rem; outline:none;" />
+              <button onclick="cxHandleAdminLogin()" class="btn btn-primary" style="width:100%; padding:12px; border: 2px solid #1e293b; border-radius:8px; box-shadow: 3px 3px 0 #1e293b; font-weight:800;">
+                Secure Admin Login
+              </button>
+            </div>
+            
           </div>
         </div>
 
@@ -102,5 +112,33 @@ window.cxHandleGoogleLogin = async function() {
     }
   } catch (err) {
     console.error('Exception during login:', err);
+  }
+};
+
+window.cxHandleAdminLogin = async function() {
+  const user = document.getElementById('admin-id').value;
+  const pass = document.getElementById('admin-password').value;
+  if (!user || !pass) return alert("Enter Admin ID and Password");
+  
+  try {
+    const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/v1/auth/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: user, password: pass })
+    });
+    
+    if (!res.ok) {
+      throw new Error("Invalid admin credentials");
+    }
+    
+    const data = await res.json();
+    sessionStorage.setItem('admin_token', data.access_token);
+    window.cxIsAuthenticated = true;
+    window.cxCurrentRole = 'admin';
+    window.cxCurrentUser = 'System Administrator';
+    if(window.cxNavigate) window.cxNavigate('adminDashboard');
+    
+  } catch (err) {
+    alert(err.message);
   }
 };
