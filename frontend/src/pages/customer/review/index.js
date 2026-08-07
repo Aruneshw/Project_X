@@ -4,6 +4,8 @@
  * Styled completely using the Board Cards visual system and ListContainer visual tokens.
  */
 
+import { showModal } from '../../../utils/modal.js';
+
 export function renderCustomerReview() {
   return `
     <div class="customer-review-wrapper" style="display:flex; flex-direction:column; gap:24px;">
@@ -87,12 +89,22 @@ export function renderCustomerReview() {
 window.cxSetStars = function(count) {
   const ratingInput = document.getElementById('review-rating');
   if (ratingInput) ratingInput.value = count;
-  alert(`Rating set to ${count} stars ⭐`);
+  showModal({ title: `Rating Set to ${count} Stars`, icon: '⭐', type: 'success', body: `You've selected ${count} out of 5 stars.` });
 };
 
 window.cxSubmitReview = function(event) {
   event.preventDefault();
   const caseId = document.getElementById('review-case-id')?.value || 'CLM-2846';
   const rating = document.getElementById('review-rating')?.value || '5';
-  alert(`✅ Thank you for your review!\n\nCase: ${caseId}\nRating: ${rating}/5 Stars\n\nYour feedback has been fed into Learning Agent (#13) for reinforcement learning weight tuning.`);
+  showModal({
+    title: 'Thank You for Your Review!',
+    icon: '✅',
+    type: 'success',
+    body: 'Your feedback has been submitted successfully.',
+    lines: [
+      `📋 Case: ${caseId}`,
+      `⭐ Rating: ${rating}/5 Stars`,
+      '🤖 Learning Agent (#13) received feedback for RL weight tuning',
+    ],
+  });
 };

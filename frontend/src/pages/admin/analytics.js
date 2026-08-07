@@ -35,7 +35,7 @@ export function renderAnalytics() {
       </div>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-secondary btn-sm" id="btn-export-csv">Export CSV</button>
-        <button class="btn btn-primary btn-sm" id="btn-generate-report" onclick="alert('Full platform report generated.')">Generate Report</button>
+        <button class="btn btn-primary btn-sm" id="btn-generate-report" onclick="showModal({ title: 'Platform Report Generated', icon: '📊', type: 'success', body: 'Full platform analytics report has been generated and queued for export.', lines: ['📈 Resolution metrics compiled', '🤖 RL feedback cycle data included', '🔗 Exportable via CSV / PDF'] })">Generate Report</button>
       </div>
     </div>
 

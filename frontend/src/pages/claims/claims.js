@@ -2,6 +2,8 @@
  * Enterprise CX Platform — Claims Management Page
  */
 import { MOCK_CLAIMS } from '../../utils/data.js';
+import { showModal } from '../../utils/modal.js';
+
 
 const ISSUE_TYPES = [
   'Customer Complaint', 'Order Dispute', 'Refund Request', 'Warranty Claim',
@@ -182,6 +184,20 @@ window.cxSubmitNewClaim = function(event) {
   const type = document.getElementById('new-claim-type')?.value || 'Order Dispute';
   const order = document.getElementById('new-claim-order')?.value || 'ORD-99999';
   document.getElementById('claims-new-modal').style.display = 'none';
-  alert(`✅ Dispute Submitted!\n\nClaim ID: CLM-${Math.floor(2848 + Math.random() * 100)}\nType: ${type}\nOrder: ${order}\nStatus: Processing\n\nCustomer Interaction Agent (#1) is classifying your intent.\nYou will be redirected to the Evidence Capture Gate.`);
-  if (window.cxNavigate) window.cxNavigate('evidence');
+  const claimId = `CLM-${Math.floor(2848 + Math.random() * 100)}`;
+  showModal({
+    title: 'Dispute Submitted!',
+    icon: '✅',
+    type: 'success',
+    body: 'Your claim is now being processed by the AI pipeline.',
+    lines: [
+      `📋 Claim ID: ${claimId}`,
+      `📦 Type: ${type}`,
+      `🏷️ Order: ${order}`,
+      '🤖 Customer Interaction Agent (#1) is classifying your intent',
+      '📷 Redirecting to Evidence Capture Gate...',
+    ],
+    confirmText: 'Continue to Evidence',
+    onConfirm: () => { if (window.cxNavigate) window.cxNavigate('evidence'); },
+  });
 };

@@ -2,6 +2,8 @@
  * Enterprise CX Platform — User / Customer Dashboard
  */
 import { MOCK_CLAIMS, MOCK_ACTIVITY } from '../../utils/data.js';
+import { showModal } from '../../utils/modal.js';
+
 
 const ISSUE_TYPES = [
   { icon: '💬', label: 'Customer Complaint',        desc: 'Report a service or product complaint' },
@@ -229,6 +231,18 @@ window.cxSubmitClaim = function(event) {
   const type = document.getElementById('claim-type')?.value || 'Order Dispute';
   const order = document.getElementById('claim-order')?.value || 'ORD-99999';
   document.getElementById('new-claim-modal').style.display = 'none';
-  alert(`✅ Dispute submitted!\n\nType: ${type}\nOrder: ${order}\n\nYour claim is now being processed by Agent #1 (Customer Interaction Agent). Evidence capture via live camera will be prompted next.`);
-  if (window.cxNavigate) window.cxNavigate('evidence');
+  showModal({
+    title: 'Dispute Submitted!',
+    icon: '✅',
+    type: 'success',
+    body: 'Your claim is now being processed by the AI pipeline.',
+    lines: [
+      `📦 Type: ${type}`,
+      `🏷️ Order: ${order}`,
+      '🤖 Agent #1 (Customer Interaction) classifying your intent',
+      '📷 Evidence capture via live camera will be prompted next',
+    ],
+    confirmText: 'Go to Evidence',
+    onConfirm: () => { if (window.cxNavigate) window.cxNavigate('evidence'); },
+  });
 };

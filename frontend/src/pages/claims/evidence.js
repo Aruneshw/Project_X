@@ -2,6 +2,8 @@
  * Enterprise CX Platform — Evidence Collection Page
  */
 import { ICONS } from '../../utils/icons.js';
+import { showModal } from '../../utils/modal.js';
+
 
 export function renderEvidence() {
   return `
@@ -209,11 +211,34 @@ export function renderEvidence() {
 }
 
 window.cxOpenCamera = function() {
-  alert('📷 Camera Gate Opening...\n\nWebRTC stream starting.\nGallery/file picker is blocked system-wide.\n\nEvidence Capture Agent (#2) is now monitoring the live feed.\nCV Object Detection Agent (#3) will begin 3-layer analysis on first frame capture.\n\nIf moire patterns or replay attack detected → Anti-Fraud Challenge Agent (#4) will issue a dynamic physical challenge.');
+  showModal({
+    title: 'Camera Gate Opening',
+    icon: '📷',
+    type: 'camera',
+    body: 'WebRTC stream starting. Gallery / file picker is blocked system-wide.',
+    lines: [
+      '🤖 Evidence Capture Agent (#2) monitoring live feed',
+      '👁️ CV Object Detection Agent (#3) begins 3-layer analysis on first frame',
+      '⚠️ Moire patterns detected → Anti-Fraud Challenge Agent (#4) will intervene',
+    ],
+    confirmText: 'Start Camera',
+  });
 };
 
 window.cxUploadDocument = function() {
-  alert('📄 Document Upload — Pipeline B\n\nSandboxed file picker opened.\nOnly invoice, receipt, warranty card, or shipping label accepted.\n\nEvidence Verification Agent (#5) will perform:\n• OCR text extraction\n• Document structure parsing\n• Cross-reference with Order DB\n\nPipeline B score is generated independently and remains isolated from Pipeline A until Score Evaluation Agent (#8) merge.');
+  showModal({
+    title: 'Document Upload — Pipeline B',
+    icon: '📄',
+    type: 'info',
+    body: 'Sandboxed file picker opened. Only invoice, receipt, warranty card, or shipping label accepted.',
+    lines: [
+      '🔍 OCR text extraction',
+      '📐 Document structure parsing',
+      '🔗 Cross-reference with Order DB',
+      '🔒 Pipeline B score isolated from Pipeline A until Agent #8 merge',
+    ],
+    confirmText: 'Open File Picker',
+  });
 };
 
 window.cxTriggerChallenge = function() {
@@ -224,5 +249,16 @@ window.cxTriggerChallenge = function() {
     'Session Code: Write the 4-digit code shown on screen on a piece of paper and hold it next to the product.',
   ];
   const chosen = challenges[Math.floor(Math.random() * challenges.length)];
-  alert(`🛡️ Anti-Fraud Challenge Issued (Agent #4)\n\nChallenge: "${chosen}"\n\nThis challenge is unique to your session. Challenge Validator Agent will verify your response via CV in real-time.\n\nPurpose: Defeats screen-replay attacks and AI-generated video fraud.`);
+  showModal({
+    title: 'Anti-Fraud Challenge Issued (Agent #4)',
+    icon: '🛡️',
+    type: 'warning',
+    body: `Challenge: "${chosen}"`,
+    lines: [
+      '🎯 Unique to your current session',
+      '👁️ Challenge Validator Agent verifies via CV in real-time',
+      '🚫 Purpose: Defeats screen-replay attacks and AI-generated video fraud',
+    ],
+    confirmText: 'I Understand',
+  });
 };

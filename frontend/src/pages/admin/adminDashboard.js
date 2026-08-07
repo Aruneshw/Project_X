@@ -4,6 +4,8 @@
  * 13-agent fleet status, policy management, and System Execution & Audit Logs Table Interface.
  */
 import { MOCK_CLAIMS, MOCK_ACTIVITY, STATS, MOCK_AGENTS } from '../../utils/data.js';
+import { showModal } from '../../utils/modal.js';
+
 
 // Initial Mock System Logs (matching JSON structured logging from backend/core/logging.py)
 export const INITIAL_SYSTEM_LOGS = [
@@ -30,7 +32,7 @@ export function renderAdminDashboard() {
       <div class="rc-card rc-card-blue" style="background:linear-gradient(135deg, #f5b444ff, #f59e0b); padding:24px; color:#fff; border:2.5px solid #1e293b; box-shadow:0 6px 0 #1e293b; margin-bottom:24px;">
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px;">
           <div class="page-header__left">
-            <span style="background:rgba(41, 39, 46, 0.25); color:#818cf8; font-size:0.72rem; font-weight:800; padding:4px 12px; border-radius:12px; text-transform:uppercase; border:1.5px solid #818cf8;">
+            <span style="background:rgba(14, 15, 15, 0.25); color:#818cf8; font-size:0.72rem; font-weight:800; padding:4px 12px; border-radius:12px; text-transform:uppercase; border:1.5px solid #818cf8;">
               Admin Ops — Platform Control Center
             </span>
             <h1 style="margin-top:8px; font-size:1.7rem; font-weight:800; color:#fff; margin-bottom:4px;">Platform Control Center</h1>
@@ -84,6 +86,92 @@ export function renderAdminDashboard() {
           <div class="stat-card__label">Fraud Blocked (Score < 50)</div>
         </div>
       </div>
+      
+      <!-- Overall & Monthly Platform Status Dashboard (ListContainer cream style) -->
+      <div style="display:grid; grid-template-columns:1.2fr 1fr; gap:20px; margin-bottom:24px;">
+        <!-- Left: Overall Performance -->
+        <div class="lc-card" style="padding:24px;">
+          <div class="lc-card-header" style="font-size:1.25rem; font-weight:800; border-bottom:2.5px solid #1e293b; padding-bottom:10px; margin-bottom:20px;">
+            📊 Overall Platform Performance Status
+          </div>
+          <div class="lc-list">
+            <div class="lc-item">
+              <div class="lc-badge">AR</div>
+              <div class="lc-content">
+                <h4 class="lc-title">Auto-Resolution Success Rate</h4>
+                <div class="lc-progress-track"><div class="lc-progress-fill" style="width: 84%; background-color:#22c55e;"></div></div>
+              </div>
+              <div class="lc-value">84% (Target: 80%+)</div>
+            </div>
+            <div class="lc-item">
+              <div class="lc-badge">CS</div>
+              <div class="lc-content">
+                <h4 class="lc-title">Customer CSAT Score</h4>
+                <div class="lc-progress-track"><div class="lc-progress-fill" style="width: 94%; background-color:#3b82f6;"></div></div>
+              </div>
+              <div class="lc-value">4.7 / 5.0</div>
+            </div>
+            <div class="lc-item">
+              <div class="lc-badge">LT</div>
+              <div class="lc-content">
+                <h4 class="lc-title">Average Processing Latency</h4>
+                <div class="lc-progress-track"><div class="lc-progress-fill" style="width: 90%; background-color:#ef4444;"></div></div>
+              </div>
+              <div class="lc-value">4.2 Seconds</div>
+            </div>
+            <div class="lc-item">
+              <div class="lc-badge">FD</div>
+              <div class="lc-content">
+                <h4 class="lc-title">Anti-Fraud Gate Block Accuracy</h4>
+                <div class="lc-progress-track"><div class="lc-progress-fill" style="width: 99.2%; background-color:#22c55e;"></div></div>
+              </div>
+              <div class="lc-value">99.2% Accuracy</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Monthly Dispute Volume Status -->
+        <div class="lc-card" style="padding:24px;">
+          <div class="lc-card-header" style="font-size:1.25rem; font-weight:800; border-bottom:2.5px solid #1e293b; padding-bottom:10px; margin-bottom:20px;">
+            📅 Monthly Dispute Volume & Trend
+          </div>
+          <div class="lc-list">
+            <div class="lc-item">
+              <div class="lc-badge">JUL</div>
+              <div class="lc-content">
+                <h4 class="lc-title">July Resolution Volume</h4>
+                <div class="lc-progress-track"><div class="lc-progress-fill" style="width: 92%; background-color:#ffb84d;"></div></div>
+              </div>
+              <div class="lc-value">1,280 Claims</div>
+            </div>
+            <div class="lc-item">
+              <div class="lc-badge">JUN</div>
+              <div class="lc-content">
+                <h4 class="lc-title">June Resolution Volume</h4>
+                <div class="lc-progress-track"><div class="lc-progress-fill" style="width: 80%; background-color:#ffb84d;"></div></div>
+              </div>
+              <div class="lc-value">1,120 Claims</div>
+            </div>
+            <div class="lc-item">
+              <div class="lc-badge">MAY</div>
+              <div class="lc-content">
+                <h4 class="lc-title">May Resolution Volume</h4>
+                <div class="lc-progress-track"><div class="lc-progress-fill" style="width: 67%; background-color:#ffb84d;"></div></div>
+              </div>
+              <div class="lc-value">940 Claims</div>
+            </div>
+            <div class="lc-item">
+              <div class="lc-badge">APR</div>
+              <div class="lc-content">
+                <h4 class="lc-title">April Resolution Volume</h4>
+                <div class="lc-progress-track"><div class="lc-progress-fill" style="width: 58%; background-color:#ffb84d;"></div></div>
+              </div>
+              <div class="lc-value">810 Claims</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
 
       <!-- Human Escalation Queue -->
       <div class="card" style="margin-bottom:24px;" id="admin-escalation-queue">
@@ -290,7 +378,7 @@ export function renderAdminDashboard() {
       <div class="card" style="margin-top:16px;" id="admin-policy">
         <div class="card__header">
           <span class="card__title">📜 Policy Management — RAG Knowledge Base (Agent #6 & #12)</span>
-          <button class="btn btn-primary btn-sm" onclick="alert('Policy indexing triggered — Memory/RAG Agent (#12) will re-index within 30 seconds.')" id="btn-reindex-policies">
+          <button class="btn btn-primary btn-sm" onclick="showModal({ title: 'Policy Re-indexing Triggered', icon: '📜', type: 'info', body: 'Memory/RAG Agent (#12) will re-index the full knowledge base within 30 seconds.', lines: ['Return Policy v2.4 — queued', 'Warranty Terms v1.8 — queued', 'Shipping SLA Docs — queued'] })" id="btn-reindex-policies">
             + Re-index Policies
           </button>
         </div>
@@ -381,15 +469,52 @@ window.cxSimulateLiveLog = function () {
 };
 
 window.cxAdminApprove = function (caseId) {
-  alert(`✅ Case ${caseId} APPROVED by Admin.\n\nWorkflow Execution Agent (#10) triggered:\n• Refund / replacement initiated\n• Customer notification queued\n• Audit log entry created\n• Learning Agent (#13) notified for RL feedback cycle`);
+  showModal({
+    title: `Case ${caseId} Approved`,
+    icon: '✅',
+    type: 'success',
+    body: 'Workflow Execution Agent (#10) has been triggered.',
+    lines: [
+      '💸 Refund / replacement initiated',
+      '📧 Customer notification queued',
+      '📋 Audit log entry created',
+      '🤖 Learning Agent (#13) notified for RL feedback cycle',
+    ],
+  });
 };
 
 window.cxAdminReject = function (caseId) {
-  alert(`❌ Case ${caseId} REJECTED by Admin.\n\nCustomer notification sent.\nAudit log entry created.\nLearning Agent (#13) notified for RL feedback.`);
+  showModal({
+    title: `Case ${caseId} Rejected`,
+    icon: '❌',
+    type: 'error',
+    body: 'The case has been rejected by the admin reviewer.',
+    lines: [
+      '📧 Customer notification sent',
+      '📋 Audit log entry created',
+      '🤖 Learning Agent (#13) notified for RL feedback',
+    ],
+  });
 };
 
 window.cxAdminViewCase = function (caseId) {
-  alert(`📋 Case ${caseId} Full Report:\n\nExplainability Framework Output:\n• Rationale: Score 50-79 — mixed evidence quality\n• Policy References: Return Policy v2.4, Warranty Terms v1.8\n• Confidence Score: 65%\n• Fraud Assessment: Low risk behavioral signals\n• Evidence Summary: Camera-only (Pipeline A) + Invoice (Pipeline B)\n• Resolution Justification: Insufficient auto-resolve confidence\n• Human Override Recommendation: Approve with partial refund\n• Execution Log: Agents 1→2→3→4→5→6→7→8→11 completed`);
+  showModal({
+    title: `Case ${caseId} — Full Explainability Report`,
+    icon: '📋',
+    type: 'info',
+    body: 'AI Explainability Framework Output:',
+    lines: [
+      '📝 Rationale: Score 50–79 — mixed evidence quality',
+      '📜 Policy References: Return Policy v2.4, Warranty Terms v1.8',
+      '📊 Confidence Score: 65%',
+      '🛡️ Fraud Assessment: Low risk behavioral signals',
+      '📷 Evidence: Camera-only (Pipeline A) + Invoice (Pipeline B)',
+      '⚡ Resolution: Insufficient auto-resolve confidence',
+      '👤 Recommendation: Approve with partial refund',
+      '🔗 Execution Log: Agents 1→2→3→4→5→6→7→8→11 completed',
+    ],
+    confirmText: 'Close Report',
+  });
 };
 
 window.cxLogout = function () {

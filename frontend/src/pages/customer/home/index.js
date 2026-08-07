@@ -1,9 +1,8 @@
 /**
  * Enterprise CX Platform — Customer Home Page
- * Styled completely using the Board Cards visual system and ListContainer visual tokens.
  */
-
-import { MOCK_CLAIMS } from '../../../utils/data.js';
+import { MOCK_CLAIMS, MOCK_ACTIVITY } from '../../../utils/data.js';
+import { showModal } from '../../../utils/modal.js';
 
 const ISSUE_TYPES = [
   { icon: '💬', label: 'Customer Complaint',        desc: 'Report a service or product complaint', color: 'red' },
@@ -332,7 +331,7 @@ window.cxOpenCameraOverlay = function() {
       video.srcObject = stream;
     })
     .catch(err => {
-      alert('Camera error: ' + err);
+      showModal({ title: 'Camera Error', icon: '⚠️', type: 'error', body: `Could not access camera: ${err}` });
     });
 };
 
@@ -422,8 +421,20 @@ window.cxExecute5StepPipeline = function(event) {
     
     setTimeout(() => {
       document.getElementById('home-claim-modal').style.display = 'none';
-      alert(`🎉 5-Step Pipeline Execution Complete!\n\nDispute Type: ${type}\nOrder: ${order}\nAI Confidence Score: 92% (>80% Auto-Resolve Threshold)\n\nWorkflow Execution Agent (#10) has issued a full refund of $1,299.00 to your original payment method.`);
-      if (window.cxNavigate) window.cxNavigate('cases');
+      showModal({
+        title: '5-Step Pipeline Execution Complete! 🎉',
+        icon: '🎉',
+        type: 'success',
+        body: 'AI Confidence Score: 92% — exceeded the 80% Auto-Resolve Threshold.',
+        lines: [
+          `📦 Dispute Type: ${type}`,
+          `🏷️ Order: ${order}`,
+          '💸 Workflow Execution Agent (#10) issued a full refund of $1,299.00',
+          '📧 Refund sent to your original payment method',
+        ],
+        confirmText: 'View My Cases',
+        onConfirm: () => { if (window.cxNavigate) window.cxNavigate('cases'); },
+      });
     }, 1200);
   }, 4800);
 };
