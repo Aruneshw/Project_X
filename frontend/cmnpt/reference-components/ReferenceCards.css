@@ -1,0 +1,172 @@
+/* Reference Cards CSS Tokens and Styles */
+
+:root {
+  --rc-color-red-bg: #f86f5c;
+  --rc-color-yellow-bg: #ffd875;
+  --rc-color-orange-bg: #ffb875;
+  --rc-color-green-bg: #76c893;
+  --rc-color-dark-border: #1e293b;
+  --rc-color-text-dark: #1e293b;
+  --rc-color-text-light: #ffffff;
+  --rc-border-weight: 2px;
+  --rc-border-radius: 20px;
+}
+
+.rc-container {
+  font-family: 'Outfit', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Base Card Style */
+.rc-card {
+  position: relative;
+  border: var(--rc-border-weight) solid var(--rc-color-dark-border);
+  border-radius: var(--rc-border-radius);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-shadow: 0 6px 0 var(--rc-color-dark-border);
+  transition: all 0.2s ease-in-out;
+  overflow: hidden;
+  text-align: left;
+}
+
+.rc-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 0 var(--rc-color-dark-border);
+}
+
+/* Top Pin decoration */
+.rc-card::before {
+  content: '';
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: var(--rc-border-weight) solid var(--rc-color-dark-border);
+  z-index: 10;
+  box-shadow: 0 2px 0 var(--rc-color-dark-border);
+}
+
+/* Pin color variations */
+.rc-card-red::before { background-color: #ef4444; }
+.rc-card-blue::before { background-color: #3b82f6; }
+.rc-card-orange::before { background-color: #f97316; }
+.rc-card-yellow::before { background-color: #eab308; }
+
+/* Background color variations */
+.rc-card-red {
+  background-color: var(--rc-color-red-bg);
+  color: var(--rc-color-text-light);
+}
+
+.rc-card-yellow {
+  background-color: var(--rc-color-yellow-bg);
+  color: var(--rc-color-text-dark);
+}
+
+.rc-card-orange {
+  background-color: var(--rc-color-orange-bg);
+  color: var(--rc-color-text-dark);
+}
+
+.rc-card-green {
+  background-color: var(--rc-color-green-bg);
+  color: var(--rc-color-text-dark);
+}
+
+/* Content Layouts */
+.rc-card-header {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 0;
+  display: flex;
+  align-items: center;
+}
+
+.rc-card-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  margin: 8px 0 4px 0;
+}
+
+.rc-card-desc {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  opacity: 0.9;
+  margin: 0 0 20px 0;
+}
+
+/* Navigation Circle Button */
+.rc-circle-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  border: var(--rc-border-weight) solid var(--rc-color-dark-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 3px 0 var(--rc-color-dark-border);
+  transition: all 0.15s ease;
+}
+
+.rc-circle-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 0 var(--rc-color-dark-border);
+}
+
+.rc-circle-btn:active {
+  transform: translateY(1px);
+  box-shadow: 0 1px 0 var(--rc-color-dark-border);
+}
+
+.rc-circle-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: var(--rc-color-text-dark);
+  stroke-width: 2.5;
+  fill: none;
+}
+
+/* Two Column Layout */
+.rc-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+@media (max-width: 600px) {
+  .rc-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Custom illustrations layout inside cards */
+.rc-flex-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.rc-left-content {
+  flex: 1;
+}
+
+.rc-right-illustration {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  flex-shrink: 0;
+}

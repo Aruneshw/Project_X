@@ -1,0 +1,454 @@
+/**
+ * Enterprise CX Platform — Customer Home Page
+ * Styled completely using the Board Cards visual system and ListContainer visual tokens.
+ */
+
+import { MOCK_CLAIMS } from '../../../utils/data.js';
+
+const ISSUE_TYPES = [
+  { icon: '💬', label: 'Customer Complaint',        desc: 'Report a service or product complaint', color: 'red' },
+  { icon: '⚖️', label: 'Order Dispute',             desc: 'Wrong item, missing parts, incorrect order', color: 'orange' },
+  { icon: '💰', label: 'Refund Request',             desc: 'Request a full or partial refund', color: 'yellow' },
+  { icon: '🛡️', label: 'Warranty Claim',            desc: 'Claim a repair or replacement under warranty', color: 'green' },
+  { icon: '🚚', label: 'Delivery Issue',             desc: 'Late, lost, or damaged during shipping', color: 'red' },
+  { icon: '❌', label: 'Subscription Cancellation', desc: 'Cancel or pause an active subscription', color: 'orange' },
+  { icon: '📣', label: 'Service Escalation',        desc: 'Escalate unresolved or critical issues', color: 'yellow' },
+  { icon: '🔄', label: 'Product Return',            desc: 'Initiate a return or exchange', color: 'green' },
+  { icon: '🧾', label: 'Billing Dispute',           desc: 'Dispute an incorrect charge or invoice', color: 'orange' },
+];
+
+export function renderCustomerHome() {
+  const activeClaim = MOCK_CLAIMS.find(c => c.status === 'processing') || MOCK_CLAIMS[0];
+
+  return `
+    <div class="customer-home-wrapper" style="display:flex; flex-direction:column; gap:28px;">
+      <!-- Welcome Header -->
+      <div style="background:#fff; border: 2.5px solid #1e293b; border-radius:20px; padding:24px; box-shadow:0 6px 0 #1e293b; position:relative; overflow:hidden;">
+        <span style="font-size:0.75rem; font-weight:800; color:#4f46e5; text-transform:uppercase; letter-spacing:0.08em; display:block; margin-bottom:4px;">Customer Resolution Hub</span>
+        <h1 style="font-size:1.8rem; font-weight:800; color:#1e293b; margin:0 0 6px 0;">Hello, ${window.cxCurrentUser || 'Praveen'} 👋</h1>
+        <p style="color:#64748b; font-size:0.9rem; margin:0;">
+          File a dispute using our 5-Step Multi-Agent AI Pipeline (Gallery-Blocked Live Camera + Document Sandbox).
+        </p>
+      </div>
+
+      <!-- ACTIVE CLAIM BANNER (Coral Red Pinned Board Card) -->
+      <div class="rc-card rc-card-red rc-card-red" style="padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
+          <div>
+            <span style="background:rgba(0,0,0,0.2); color:#fff; font-size:0.72rem; font-weight:800; padding:4px 10px; border-radius:12px; border:1.5px solid #1e293b;">
+              ACTIVE DISPUTE — ${activeClaim.id}
+            </span>
+            <h2 style="font-size:1.5rem; font-weight:800; margin-top:8px; color:#fff;">${activeClaim.type}</h2>
+          </div>
+          <span style="background:#1e293b; color:#fff; font-size:0.78rem; font-weight:800; padding:6px 14px; border-radius:20px; border:1.5px solid #fff;">
+            ${activeClaim.score >= 80 ? '⚡ Auto-Resolving' : activeClaim.score >= 50 ? '⚖️ Human Review' : '🚫 Under Review'}
+          </span>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div style="display:flex; justify-content:space-between; font-size:0.85rem; color:#fff; margin-bottom:6px; font-weight:700;">
+            <span>AI Score: ${activeClaim.score}% — Current Agent: ${activeClaim.agent}</span>
+            <span>Order ${activeClaim.order}</span>
+          </div>
+          <div style="height:12px; background:rgba(0,0,0,0.15); border-radius:6px; border:1.5px solid #1e293b; overflow:hidden;">
+            <div style="width:${activeClaim.score}%; height:100%; background:#ffd875; border-radius:6px;"></div>
+          </div>
+        </div>
+        <div style="display:flex; gap:20px; flex-wrap:wrap; font-size:0.85rem; color:#fff; font-weight:700;">
+          <span>Status: ${activeClaim.status.toUpperCase()}</span>
+          <span>Submitted: ${activeClaim.created}</span>
+        </div>
+      </div>
+
+      <!-- FILE A COMPLAINT CONTAINER (Warm Yellow Pinned Board Card) -->
+      <div class="rc-card rc-card-yellow rc-card-yellow" style="padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
+          <div>
+            <span style="background:#1e293b; color:#fff; font-size:0.75rem; font-weight:800; padding:4px 12px; border-radius:12px; display:inline-block; margin-bottom:8px;">📝 STEP 1 INTAKE</span>
+            <h2 style="font-size:1.5rem; font-weight:800; color:#1e293b; margin:0 0 4px 0;">File a Complaint</h2>
+            <p style="font-size:0.9rem; color:#1e293b; opacity:0.8; margin:0;">Select an issue category below to launch the 5-Step AI Dispute Pipeline.</p>
+          </div>
+          <button class="btn btn-primary" onclick="cxOpenIntakeModal()" style="border: 2px solid #1e293b; box-shadow: 3px 3px 0 #1e293b;">
+            + File a Complaint Now
+          </button>
+        </div>
+
+        <!-- 9 Issue Categories Grid -->
+        <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:16px; margin-top:16px;">
+          ${ISSUE_TYPES.map((t, i) => `
+            <div id="home-issue-${i}"
+              onclick="cxHomeSelectIssue('${t.label}')"
+              class="rc-card rc-card-${t.color}"
+              style="padding:14px; cursor:pointer; min-height:130px; box-shadow: 0 4px 0 #1e293b; display:flex; flex-direction:column; justify-content:space-between; border-radius:14px;">
+              <div>
+                <div style="font-size:1.6rem; margin-bottom:6px;">${t.icon}</div>
+                <div style="font-weight:800; font-size:0.88rem; margin-bottom:2px;">${t.label}</div>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-top:6px;">
+                <span style="font-size:0.7rem; opacity:0.8;">Select</span>
+                <span style="font-size:1rem;">➔</span>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- 5-STEP MULTI-AGENT RESOLUTION GUIDE (Daily Quests / ListContainer style) -->
+      <div class="lc-card" style="padding:28px;">
+        <div class="lc-card-header" style="font-size:1.3rem; font-weight:800; border-bottom:2px solid #1e293b; padding-bottom:12px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+          <span>📘 5-Step Multi-Agent Resolution Guide</span>
+          <button onclick="cxToggleJsonView()" style="background:#1e293b; color:#fff; border:none; padding:6px 12px; border-radius:8px; font-size:0.75rem; font-weight:800; cursor:pointer;">
+            Toggle JSON Schema
+          </button>
+        </div>
+
+        <!-- Collapsible JSON view -->
+        <div id="json-prompt-view" style="display:none; margin-bottom:24px; padding:14px; background:#1e293b; border-radius:12px; color:#e2e8f0; font-family:monospace; font-size:0.76rem; border:2px solid #1e293b; box-shadow:4px 4px 0 #1e293b;">
+          <pre style="white-space:pre-wrap; max-height:220px; overflow-y:auto; color:#cbd5e1; margin:0;">{
+  "workflow_name": "Autonomous_Dispute_Resolution_Pipeline",
+  "intake_schema": {
+    "complaint_type": "string (enum of 9 types)",
+    "order_id": "string (required)",
+    "invoice_document": "Pipeline_B_Sandboxed_Doc (required)",
+    "visual_evidence": "Pipeline_A_Camera_Only (allow_gallery: false)",
+    "defect_description": "string (required)"
+  },
+  "execution_chain": ["Agent #1", "Agent #2", "Agent #3/#4", "Agent #5", "Agent #8/#10"]
+}</pre>
+        </div>
+
+        <div class="lc-list">
+          <!-- Step 1 Row -->
+          <div class="lc-item">
+            <div class="lc-badge">1</div>
+            <div class="lc-content">
+              <h4 class="lc-title">Step 1: Complaint & Intent Classification (Agent #1)</h4>
+              <div style="font-size:0.8rem; color:#64748b;">Customer Interaction Agent (#1) extracts details and logs type.</div>
+              <div class="lc-progress-track"><div class="lc-progress-fill" style="width: 100%;"></div></div>
+            </div>
+            <div class="lc-value">Complete</div>
+          </div>
+
+          <!-- Step 2 Row -->
+          <div class="lc-item">
+            <div class="lc-badge">2</div>
+            <div class="lc-content">
+              <h4 class="lc-title">Step 2: Live Camera Evidence Gate (Agent #2 — Gallery Blocked)</h4>
+              <div style="font-size:0.8rem; color:#64748b;">Evidence Capture Agent (#2) forces live WebRTC frame.</div>
+              <div class="lc-progress-track"><div class="lc-progress-fill" style="width: 50%;"></div></div>
+            </div>
+            <div class="lc-value">Active</div>
+          </div>
+
+          <!-- Step 3 Row -->
+          <div class="lc-item">
+            <div class="lc-badge">3</div>
+            <div class="lc-content">
+              <h4 class="lc-title">Step 3: 3-Layer CV & Challenge (Agent #3 & #4)</h4>
+              <div style="font-size:0.8rem; color:#64748b;">MediaPipe + YOLO + OpenCV segmentation check.</div>
+              <div class="lc-progress-track"><div class="lc-progress-fill" style="width: 0%;"></div></div>
+            </div>
+            <div class="lc-value">Pending</div>
+          </div>
+
+          <!-- Step 4 Row -->
+          <div class="lc-item">
+            <div class="lc-badge">4</div>
+            <div class="lc-content">
+              <h4 class="lc-title">Step 4: Sandboxed Document Verification (Agent #5)</h4>
+              <div style="font-size:0.8rem; color:#64748b;">OCR parses raw invoice in isolated Pipeline B.</div>
+              <div class="lc-progress-track"><div class="lc-progress-fill" style="width: 0%;"></div></div>
+            </div>
+            <div class="lc-value">Pending</div>
+          </div>
+
+          <!-- Step 5 Row -->
+          <div class="lc-item">
+            <div class="lc-badge">5</div>
+            <div class="lc-content">
+              <h4 class="lc-title">Step 5: Score Evaluation & Outcome (Agent #8 & #10)</h4>
+              <div style="font-size:0.8rem; color:#64748b;">Final weight score merging, execution of refund / escalation.</div>
+              <div class="lc-progress-track"><div class="lc-progress-fill" style="width: 0%;"></div></div>
+            </div>
+            <div class="lc-value">Pending</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5-STEP COMPLAINT INTAKE & MULTI-AGENT EXECUTION MODAL -->
+    <div id="home-claim-modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.65); z-index:1000; align-items:center; justify-content:center;">
+      <div style="background:#fff; border:2.5px solid #1e293b; border-radius:24px; padding:28px; width:100%; max-width:540px; box-shadow:0 20px 0 rgba(0,0,0,0.15); max-height:90vh; overflow-y:auto;">
+        
+        <!-- Modal Header -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:2px dashed #cbd5e1; padding-bottom:12px;">
+          <div>
+            <h2 style="font-size:1.3rem; font-weight:800; color:#1e293b; margin:0;">Dispute Intake & Resolution</h2>
+            <span style="font-size:0.75rem; color:#4f46e5; font-weight:800;">Step 1: Provide Required Information</span>
+          </div>
+          <button onclick="document.getElementById('home-claim-modal').style.display='none'" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#1e293b; font-weight:800;">✕</button>
+        </div>
+
+        <!-- Step 1 Intake Form -->
+        <form id="intake-form" onsubmit="cxExecute5StepPipeline(event)" style="display:flex; flex-direction:column; gap:16px;">
+          
+          <!-- 1. Complaint Type -->
+          <div>
+            <label style="font-size:0.85rem; font-weight:800; color:#1e293b; display:block; margin-bottom:6px;">1. Complaint Category</label>
+            <select id="intake-type" required style="width:100%; padding:10px 12px; border-radius:10px; border:2px solid #1e293b; font-size:0.88rem; outline:none; background:#fff;">
+              ${ISSUE_TYPES.map(t => `<option value="${t.label}">${t.icon} ${t.label}</option>`).join('')}
+            </select>
+          </div>
+
+          <!-- 2. Order ID -->
+          <div>
+            <label style="font-size:0.85rem; font-weight:800; color:#1e293b; display:block; margin-bottom:6px;">2. Order ID</label>
+            <input type="text" id="intake-order" placeholder="e.g. ORD-91823" required value="ORD-91823" style="width:100%; padding:10px 12px; border-radius:10px; border:2px solid #1e293b; font-size:0.88rem; outline:none;" />
+          </div>
+
+          <!-- 3. Invoice Document (Pipeline B) -->
+          <div style="background:#f0fdf4; border:2px solid #1e293b; border-radius:12px; padding:12px;">
+            <label style="font-size:0.85rem; font-weight:800; color:#166534; display:block; margin-bottom:6px;">3. Upload Invoice / Receipt (Pipeline B - Sandboxed)</label>
+            <input type="file" id="intake-invoice" accept=".pdf,.png,.jpg,.jpeg" required style="width:100%; font-size:0.82rem;">
+            <div id="invoice-file-name" style="margin-top:6px; font-size:0.78rem; color:#15803d; font-weight:700;"></div>
+          </div>
+
+          <!-- 4. Live Camera Photo (Pipeline A - Gallery BLOCKED) -->
+          <div style="background:#fef2f2; border:2px solid #1e293b; border-radius:12px; padding:12px;">
+            <label style="font-size:0.85rem; font-weight:800; color:#991b1b; display:block; margin-bottom:6px;">
+              4. Live Camera Photo Evidence (Pipeline A - Gallery BLOCKED)
+            </label>
+            <div style="font-size:0.76rem; color:#991b1b; line-height:1.4; margin-bottom:8px;">
+              <strong>Gallery Selection Disabled:</strong> Platform policy restricts file picker. Only live WebRTC camera capture is permitted for visual damage.
+            </div>
+            <button type="button" class="btn btn-secondary" onclick="cxOpenCameraOverlay()" id="btn-camera-photo-trigger" style="width:100%; border:2px solid #1e293b; color:#1e293b; font-weight:800; box-shadow:2px 2px 0 #1e293b;">
+              📷 Capture Live Photo via Camera
+            </button>
+            <input type="hidden" id="captured-photo-data" name="captured-photo-data">
+            <div id="camera-status-note" style="font-size:0.78rem; color:#16a34a; font-weight:700; margin-top:6px; display:none;">
+              ✓ Live photo captured.
+            </div>
+          </div>
+
+          <!-- 5. Defect Description -->
+          <div>
+            <label style="font-size:0.85rem; font-weight:800; color:#1e293b; display:block; margin-bottom:6px;">5. Defect Description</label>
+            <textarea id="intake-desc" required placeholder="Describe the damage, defect, or missing item in detail..." style="width:100%; padding:10px 12px; border-radius:10px; border:2px solid #1e293b; font-size:0.88rem; outline:none; resize:vertical; min-height:70px;">Item arrived with broken glass display corner and unsealed packaging.</textarea>
+          </div>
+
+          <div style="display:flex; gap:12px; margin-top:6px;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('home-claim-modal').style.display='none'" style="flex:1; border:2px solid #1e293b;">
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary" style="flex:2; border:2px solid #1e293b; box-shadow:3px 3px 0 #1e293b;" id="btn-submit-pipeline">
+              Execute Steps 2–5 Multi-Agent Flow →
+            </button>
+          </div>
+        </form>
+
+        <!-- Pipeline Execution Stepper View (Hidden initially) -->
+        <div id="pipeline-stepper-view" style="display:none; margin-top:10px;" class="lc-card">
+          <h3 class="lc-card-header" style="margin-top:0;">Executing Multi-Agent Resolution Steps</h3>
+          <div class="lc-list">
+            <div class="lc-item" id="exec-step-1">
+              <div class="lc-badge">1</div>
+              <div class="lc-content">
+                <h4 class="lc-title">Step 1: Intent & Order Extract (Agent #1)</h4>
+                <div class="lc-progress-track"><div class="lc-progress-fill" style="width:100%;"></div></div>
+              </div>
+              <div class="lc-value" style="color:#059669; font-weight:800;">✓ Completed</div>
+            </div>
+            <div class="lc-item" id="exec-step-2">
+              <div class="lc-badge">2</div>
+              <div class="lc-content">
+                <h4 class="lc-title">Step 2: Live Camera Evidence Gate (Agent #2)</h4>
+                <div class="lc-progress-track"><div class="lc-progress-fill" id="pb-step-2" style="width:20%;"></div></div>
+              </div>
+              <div class="lc-value" id="exec-step-2-status">⏳ Running...</div>
+            </div>
+            <div class="lc-item" id="exec-step-3">
+              <div class="lc-badge">3</div>
+              <div class="lc-content">
+                <h4 class="lc-title">Step 3: 3-Layer CV & Anti-Fraud Challenge (Agent #3 & #4)</h4>
+                <div class="lc-progress-track"><div class="lc-progress-fill" id="pb-step-3" style="width:0%;"></div></div>
+              </div>
+              <div class="lc-value" id="exec-step-3-status">Pending</div>
+            </div>
+            <div class="lc-item" id="exec-step-4">
+              <div class="lc-badge">4</div>
+              <div class="lc-content">
+                <h4 class="lc-title">Step 4: Sandboxed Invoice OCR (Agent #5)</h4>
+                <div class="lc-progress-track"><div class="lc-progress-fill" id="pb-step-4" style="width:0%;"></div></div>
+              </div>
+              <div class="lc-value" id="exec-step-4-status">Pending</div>
+            </div>
+            <div class="lc-item" id="exec-step-5">
+              <div class="lc-badge">5</div>
+              <div class="lc-content">
+                <h4 class="lc-title">Step 5: Score Evaluation & Outcome (Agent #8 & #10)</h4>
+                <div class="lc-progress-track"><div class="lc-progress-fill" id="pb-step-5" style="width:0%;"></div></div>
+              </div>
+              <div class="lc-value" id="exec-step-5-status">Pending</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  `;
+}
+
+window.cxOpenIntakeModal = function() {
+  const modal = document.getElementById('home-claim-modal');
+  const form = document.getElementById('intake-form');
+  const stepper = document.getElementById('pipeline-stepper-view');
+  if (modal) modal.style.display = 'flex';
+  if (form) form.style.display = 'flex';
+  if (stepper) stepper.style.display = 'none';
+  // Attach invoice file change listener (in case not already attached)
+  const invoiceInput = document.getElementById('intake-invoice');
+  if (invoiceInput) {
+    invoiceInput.addEventListener('change', function(e) {
+      const file = e.target.files[0];
+      const nameDiv = document.getElementById('invoice-file-name');
+      if (nameDiv) nameDiv.textContent = file ? `📄 ${file.name}` : '';
+    });
+  }
+};
+
+window.cxHomeSelectIssue = function(type) {
+  cxOpenIntakeModal();
+  const sel = document.getElementById('intake-type');
+  if (sel) sel.value = type;
+};
+
+window.cxOpenCameraOverlay = function() {
+  const overlay = document.getElementById('camera-overlay');
+  if (!overlay) return;
+  overlay.style.display = 'flex';
+  const video = document.getElementById('camera-video');
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      window.cameraStream = stream;
+      video.srcObject = stream;
+    })
+    .catch(err => {
+      alert('Camera error: ' + err);
+    });
+};
+
+window.cxCapturePhoto = function() {
+  const video = document.getElementById('camera-video');
+  const canvas = document.createElement('canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  const dataURL = canvas.toDataURL('image/jpeg');
+  document.getElementById('captured-photo-data').value = dataURL;
+  const note = document.getElementById('camera-status-note');
+  if (note) { note.textContent = '✓ Live photo captured.'; note.style.display = 'block'; }
+  if (window.cameraStream) {
+    window.cameraStream.getTracks().forEach(t => t.stop());
+  }
+  const overlay = document.getElementById('camera-overlay');
+  if (overlay) overlay.style.display = 'none';
+};
+
+window.cxCloseCameraOverlay = function() {
+  if (window.cameraStream) {
+    window.cameraStream.getTracks().forEach(t => t.stop());
+  }
+  const overlay = document.getElementById('camera-overlay');
+  if (overlay) overlay.style.display = 'none';
+};
+
+window.cxToggleJsonView = function() {
+  const v = document.getElementById('json-prompt-view');
+  if (v) v.style.display = (v.style.display === 'none' ? 'block' : 'none');
+};
+
+window.cxExecute5StepPipeline = function(event) {
+  event.preventDefault();
+  const type = document.getElementById('intake-type')?.value || 'Order Dispute';
+  const order = document.getElementById('intake-order')?.value || 'ORD-91823';
+
+  const form = document.getElementById('intake-form');
+  const stepper = document.getElementById('pipeline-stepper-view');
+  if (form) form.style.display = 'none';
+  if (stepper) stepper.style.display = 'block';
+
+  // Step 2 Execution
+  setTimeout(() => {
+    const s2 = document.getElementById('exec-step-2-status');
+    const pb2 = document.getElementById('pb-step-2');
+    const s3 = document.getElementById('exec-step-3-status');
+    const pb3 = document.getElementById('pb-step-3');
+    if (s2) s2.innerHTML = '<span style="color:#059669; font-weight:800;">✓ Pass</span>';
+    if (pb2) pb2.style.width = '100%';
+    if (s3) s3.innerHTML = '⏳ Running...';
+    if (pb3) pb3.style.width = '30%';
+  }, 1200);
+
+  // Step 3 Execution
+  setTimeout(() => {
+    const s3 = document.getElementById('exec-step-3-status');
+    const pb3 = document.getElementById('pb-step-3');
+    const s4 = document.getElementById('exec-step-4-status');
+    const pb4 = document.getElementById('pb-step-4');
+    if (s3) s3.innerHTML = '<span style="color:#059669; font-weight:800;">✓ Pass</span>';
+    if (pb3) pb3.style.width = '100%';
+    if (s4) s4.innerHTML = '⏳ OCR Parsing...';
+    if (pb4) pb4.style.width = '40%';
+  }, 2400);
+
+  // Step 4 Execution
+  setTimeout(() => {
+    const s4 = document.getElementById('exec-step-4-status');
+    const pb4 = document.getElementById('pb-step-4');
+    const s5 = document.getElementById('exec-step-5-status');
+    const pb5 = document.getElementById('pb-step-5');
+    if (s4) s4.innerHTML = '<span style="color:#059669; font-weight:800;">✓ Pass</span>';
+    if (pb4) pb4.style.width = '100%';
+    if (s5) s5.innerHTML = '⏳ Scoring...';
+    if (pb5) pb5.style.width = '50%';
+  }, 3600);
+
+  // Step 5 Execution & Outcome
+  setTimeout(() => {
+    const s5 = document.getElementById('exec-step-5-status');
+    const pb5 = document.getElementById('pb-step-5');
+    if (s5) s5.innerHTML = '<span style="color:#059669; font-weight:800;">⚡ Refunded (Score: 92%)</span>';
+    if (pb5) pb5.style.width = '100%';
+    
+    setTimeout(() => {
+      document.getElementById('home-claim-modal').style.display = 'none';
+      alert(`🎉 5-Step Pipeline Execution Complete!\n\nDispute Type: ${type}\nOrder: ${order}\nAI Confidence Score: 92% (>80% Auto-Resolve Threshold)\n\nWorkflow Execution Agent (#10) has issued a full refund of $1,299.00 to your original payment method.`);
+      if (window.cxNavigate) window.cxNavigate('cases');
+    }, 1200);
+  }, 4800);
+};
+
+// Initialize camera overlay and invoice file listener
+(function(){
+  if (!document.getElementById('camera-overlay')) {
+    const overlayHtml = `
+    <div id="camera-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); align-items:center; justify-content:center; z-index:1100;">
+      <div style="background:#fff; border: 2.5px solid #1e293b; padding:20px; border-radius:12px; text-align:center; box-shadow: 6px 6px 0 #1e293b;">
+        <video id="camera-video" autoplay playsinline style="width:300px; border-radius:8px; border:2.5px solid #1e293b;"></video>
+        <div style="margin-top:12px; display:flex; gap:10px; justify-content:center;">
+          <button class="btn btn-primary" onclick="cxCapturePhoto()" style="border: 2px solid #1e293b;">Take Photo</button>
+          <button class="btn btn-secondary" onclick="cxCloseCameraOverlay()" style="border: 2px solid #1e293b;">Cancel</button>
+        </div>
+      </div>
+    </div>`;
+    document.body.insertAdjacentHTML('beforeend', overlayHtml);
+  }
+  const invoiceInput = document.getElementById('intake-invoice');
+  if (invoiceInput) {
+    invoiceInput.addEventListener('change', function(e){
+      const file = e.target.files[0];
+      const nameDiv = document.getElementById('invoice-file-name');
+      if (nameDiv) nameDiv.textContent = file ? `📄 ${file.name}` : '';
+    });
+  }
+})();

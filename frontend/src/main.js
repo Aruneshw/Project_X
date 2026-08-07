@@ -1,21 +1,40 @@
 /**
- * CX Platform — Customer Resolution Portal
- * Warm, friendly customer-facing UI matching design reference.
+ * Enterprise CX Platform — App Entry Point & Router
+ * Maps sidebar navigation to customer & admin pages.
  */
 import './style.css';
 import { renderSidebar } from './components/sidebar.js';
-import { renderHome, renderRightPanel } from './pages/home.js';
-import { renderAuth, bindAuthEvents } from './pages/auth.js';
-import { supabase } from './utils/supabase.js';
+import {
+  renderHome,
+  renderRightPanel,
+  renderLogin,
+  renderCustomerHome,
+  renderCustomerCases,
+  renderCustomerReview,
+  renderCustomerProfile,
+  renderAdminDashboard,
+  renderDashboard,
+  renderClaims,
+  renderEvidence,
+  renderAgents,
+  renderAnalytics,
+} from './pages/index.js';
 
 const state = { currentPage: 'home', user: null };
 
 const pages = {
-  home: renderHome,
-  cases: renderHome,
-  chat: renderHome,
-  notifications: renderHome,
-  profile: renderHome,
+  home:           renderHome,
+  cases:          () => (window.cxCurrentRole === 'admin' ? renderClaims() : renderCustomerCases()),
+  review:         () => renderCustomerReview(),
+  profile:        () => renderCustomerProfile(),
+  login:          () => renderLogin(),
+  userDashboard:  () => renderCustomerHome(),
+  adminDashboard: () => renderAdminDashboard(),
+  dashboard:      () => renderDashboard(),
+  claims:         () => renderClaims(),
+  evidence:       () => renderEvidence(),
+  agents:         () => renderAgents(),
+  analytics:      () => renderAnalytics(),
 };
 
 function navigate(page) {
@@ -24,21 +43,25 @@ function navigate(page) {
 }
 
 async function handleSignOut() {
-  await supabase.auth.signOut();
-  state.user = null;
+  window.cxIsAuthenticated = false;
+  window.cxCurrentRole = null;
+  state.currentPage = 'login';
   render();
 }
 
 function render() {
   const app = document.getElementById('app');
-  
-  if (!state.user) {
-    app.innerHTML = renderAuth();
-    bindAuthEvents();
-    return;
-  }
 
   const pageRenderer = pages[state.currentPage] || renderHome;
+
+  if (!window.cxIsAuthenticated || state.currentPage === 'login') {
+    app.innerHTML = `
+      <div style="min-height:100vh; background:#f8fafc; display:flex; align-items:center; justify-content:center;">
+        ${pageRenderer()}
+      </div>
+    `;
+    return;
+  }
 
   app.innerHTML = `
     <div class="app-layout">
@@ -63,14 +86,7 @@ function render() {
 }
 
 window.cxNavigate = navigate;
+window.cxIsAuthenticated = false;
 
-// Initialize auth state
-supabase.auth.getSession().then(({ data: { session } }) => {
-  state.user = session?.user ?? null;
-  render();
-});
-
-supabase.auth.onAuthStateChange((_event, session) => {
-  state.user = session?.user ?? null;
-  render();
-});
+// Initial render
+render();

@@ -1,13 +1,18 @@
-import logging
+"""
+Enterprise CX Platform — FastAPI Main Entry Point
+"""
+
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from backend.core.config import settings
+from backend.core.logging import setup_logging, get_logger
 
 from api.routes import agent_monitor
 from services.kafka_streamer import streamer
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+setup_logging()
+logger = get_logger("main")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -19,12 +24,17 @@ async def lifespan(app: FastAPI):
     logger.info("Shutting down FastAPI. Stopping Kafka Streamer...")
     streamer.stop_background_task()
 
-app = FastAPI(title="CX Platform API", lifespan=lifespan)
+app = FastAPI(
+    title=settings.APP_NAME,
+    version=settings.APP_VERSION,
+    openapi_url=f"{settings.API_PREFIX}/openapi.json",
+    lifespan=lifespan
+)
 
-# Allow CORS for the Vite frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict this to frontend URL
+    allow_origins=settings.CORS_ORIGINS,
+
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -34,5 +44,18 @@ app.add_middleware(
 app.include_router(agent_monitor.router, prefix="/api/monitor", tags=["Monitoring"])
 
 @app.get("/")
-def read_root():
-    return {"status": "ok", "message": "CX Platform API is running"}
+async def root():
+    return {
+        "app": settings.APP_NAME,
+        "version": settings.APP_VERSION,
+        "environment": settings.ENVIRONMENT,
+        "status": "online"
+    }
+
+@app.get(f"{settings.API_PREFIX}/health")
+async def health_check():
+    return {"status": "healthy"}
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("backend.main:app", host=settings.HOST, port=settings.PORT, reload=settings.DEBUG)
