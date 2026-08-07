@@ -26,6 +26,10 @@ export function renderSidebar(currentPage) {
             <span>${n.label}</span>
           </button>
         `).join('')}
+        <button class="sidebar__link" id="btn-sign-out" style="margin-top: 10px; border-top: 1px solid var(--cx-border); border-radius: 0; padding-top: 14px;">
+          <span class="nav-icon">🚪</span>
+          <span>Sign Out</span>
+        </button>
       </nav>
 
       <div class="sidebar__scene">

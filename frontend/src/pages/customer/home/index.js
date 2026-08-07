@@ -235,11 +235,11 @@ export function renderCustomerHome() {
             <textarea id="intake-desc" required placeholder="Describe the damage, defect, or missing item in detail..." style="width:100%; padding:10px 12px; border-radius:10px; border:2px solid #1e293b; font-size:0.88rem; outline:none; resize:vertical; min-height:70px;"></textarea>
           </div>
 
-          <div style="display:flex; gap:12px; margin-top:6px;">
-            <button type="button" class="btn btn-secondary" onclick="document.getElementById('home-claim-modal').style.display='none'" style="flex:1; border:2px solid #1e293b;">
+          <div style="display:flex; gap:12px; margin-top:10px; flex-wrap:wrap;">
+            <button type="button" class="btn btn-secondary" onclick="document.getElementById('home-claim-modal').style.display='none'" style="flex:1; min-width:100px; border:2px solid #1e293b;">
               Cancel
             </button>
-            <button type="submit" class="btn btn-primary" style="flex:2; border:2px solid #1e293b; box-shadow:3px 3px 0 #1e293b;" id="btn-submit-pipeline">
+            <button type="submit" class="btn btn-primary" style="flex:2; min-width:200px; border:2px solid #1e293b; box-shadow:3px 3px 0 #1e293b; white-space:normal; font-size:0.85rem;" id="btn-submit-pipeline">
               Execute Steps 2–5 Multi-Agent Flow →
             </button>
           </div>
@@ -437,6 +437,19 @@ window.cxExecute5StepPipeline = async function(event) {
         msg += `\n\n⚠️ Self-Healing Trigger: ${data.self_healing_action}`;
       }
       alert(msg);
+      
+      // Retain the submitted complaint in MOCK_CLAIMS so it shows up in "My Cases"
+      MOCK_CLAIMS.unshift({
+        id: data.claim_id,
+        type: type,
+        customer: window.cxCurrentUser || 'User',
+        order: order,
+        status: data.decision.toLowerCase() === 'refund' || data.decision.toLowerCase() === 'approve' ? 'resolved' : 'processing',
+        score: data.ai_score,
+        agent: 'Agent #10 (Workflow)',
+        created: new Date().toISOString().split('T')[0]
+      });
+      
       if (window.cxNavigate) window.cxNavigate('cases');
     }, 1000);
 

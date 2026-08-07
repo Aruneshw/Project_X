@@ -5,6 +5,8 @@
 import './style.css';
 import { renderSidebar } from './components/sidebar.js';
 import { supabase } from './utils/supabase.js';
+window.supabase = supabase; // Expose for profile saving
+
 import {
   renderHome,
   renderRightPanel,
