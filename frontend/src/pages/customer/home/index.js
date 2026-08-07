@@ -518,7 +518,10 @@ window.cxExecute5StepPipeline = async function(event) {
         onConfirm: () => { if (window.cxNavigate) window.cxNavigate('cases'); },
       });
     }, 1200);
-  }, 4800);
+  } catch (err) {
+    updateStep(5, 'active', '100%', '<span style="color:#dc2626; font-weight:800;">Error contacting API</span>');
+    alert("Could not connect to backend orchestration API. Ensure Uvicorn is running on port 8000.");
+  }
 };
 
 // Initialize camera overlay and invoice file listener

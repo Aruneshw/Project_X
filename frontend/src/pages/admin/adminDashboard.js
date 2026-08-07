@@ -402,30 +402,35 @@ export function renderAdminDashboard() {
       <div class="card" style="margin-top:16px;" id="admin-policy">
         <div class="card__header">
           <span class="card__title">📜 Policy Management — RAG Knowledge Base (Agent #6 & #12)</span>
-          <button class="btn btn-primary btn-sm" onclick="showModal({ title: 'Policy Re-indexing Triggered', icon: '📜', type: 'info', body: 'Memory/RAG Agent (#12) will re-index the full knowledge base within 30 seconds.', lines: ['Return Policy v2.4 — queued', 'Warranty Terms v1.8 — queued', 'Shipping SLA Docs — queued'] })" id="btn-reindex-policies">
-            + Re-index Policies
-          </button>
+          <div style="display:flex; gap:10px;">
+            <button class="btn btn-secondary btn-sm" onclick="cxTogglePolicyUpload()" id="btn-toggle-upload">
+              Upload New Policy
+            </button>
+            <button class="btn btn-primary btn-sm" onclick="cxReindexPolicies()" id="btn-reindex-policies">
+              🔄 Re-index Policies
+            </button>
+          </div>
         </div>
-        <div class="card__body" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:10px;">
-          ${[
-      { icon: '📋', name: 'Return & Refund Policy', version: 'v2.4', status: 'active' },
-      { icon: '🛡️', name: 'Warranty Terms', version: 'v1.8', status: 'active' },
-      { icon: '🚚', name: 'Delivery SLA Agreement', version: 'v3.1', status: 'active' },
-      { icon: '💳', name: 'Billing Dispute Policy', version: 'v1.2', status: 'active' },
-      { icon: '📞', name: 'Subscription Terms', version: 'v2.0', status: 'active' },
-      { icon: '🔒', name: 'GDPR / CCPA Compliance', version: 'v4.0', status: 'active' },
-    ].map(p => `
-            <div style="padding:12px; border-radius:10px; background:var(--cx-bg-input); border:1px solid var(--cx-border);">
-              <div style="display:flex; align-items:center; gap:6px; margin-bottom:4px;">
-                <span>${p.icon}</span>
-                <span style="font-weight:700; font-size:0.82rem;">${p.name}</span>
-              </div>
-              <div style="flex:1;">
-                <label style="font-size:0.8rem; font-weight:700; color:#1e293b;">Version</label>
-                <input type="text" id="policy-version" required placeholder="e.g. v2026.1" style="width:100%; padding:8px; border-radius:8px; border:1px solid #cbd5e1;">
-              </div>
+        
+        <div id="policy-upload-container" style="display:none; padding:16px; background:#f8fafc; border-bottom:1px solid #e2e8f0;">
+          <form id="policy-upload-form" onsubmit="cxUploadPolicy(event)" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+            <div style="flex:2; min-width:200px;">
+              <label style="font-size:0.8rem; font-weight:700; color:#1e293b;">Document Name</label>
+              <input type="text" id="policy-doc-name" required placeholder="e.g. Summer Return Policy" style="width:100%; padding:8px; border-radius:8px; border:1px solid #cbd5e1;">
             </div>
-            <div>
+            <div style="flex:1; min-width:120px;">
+              <label style="font-size:0.8rem; font-weight:700; color:#1e293b;">Type</label>
+              <select id="policy-type" required style="width:100%; padding:8px; border-radius:8px; border:1px solid #cbd5e1;">
+                <option value="Return">Return</option>
+                <option value="Warranty">Warranty</option>
+                <option value="General">General</option>
+              </select>
+            </div>
+            <div style="flex:1; min-width:100px;">
+              <label style="font-size:0.8rem; font-weight:700; color:#1e293b;">Version</label>
+              <input type="text" id="policy-version" required placeholder="v1.0" style="width:100%; padding:8px; border-radius:8px; border:1px solid #cbd5e1;">
+            </div>
+            <div style="flex:2; min-width:200px;">
               <label style="font-size:0.8rem; font-weight:700; color:#1e293b;">PDF File</label>
               <input type="file" id="policy-file" accept=".pdf" required style="width:100%; font-size:0.8rem;">
             </div>
