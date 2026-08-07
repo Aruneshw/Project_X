@@ -32,6 +32,7 @@ export function renderCustomerHome() {
       </div>
 
       <!-- ACTIVE CLAIM BANNER (Coral Red Pinned Board Card) -->
+      ${activeClaim ? `
       <div class="rc-card rc-card-red rc-card-red" style="padding:24px;">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; flex-wrap:wrap; gap:10px;">
           <div>
@@ -58,6 +59,7 @@ export function renderCustomerHome() {
           <span>Submitted: ${activeClaim.created}</span>
         </div>
       </div>
+      ` : ''}
 
       <!-- FILE A COMPLAINT CONTAINER (Warm Yellow Pinned Board Card) -->
       <div class="rc-card rc-card-yellow rc-card-yellow" style="padding:24px;">
@@ -96,9 +98,6 @@ export function renderCustomerHome() {
       <div class="lc-card" style="padding:28px;">
         <div class="lc-card-header" style="font-size:1.3rem; font-weight:800; border-bottom:2px solid #1e293b; padding-bottom:12px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
           <span>📘 5-Step Multi-Agent Resolution Guide</span>
-          <button onclick="cxToggleJsonView()" style="background:#1e293b; color:#fff; border:none; padding:6px 12px; border-radius:8px; font-size:0.75rem; font-weight:800; cursor:pointer;">
-            Toggle JSON Schema
-          </button>
         </div>
 
         <!-- Collapsible JSON view -->
@@ -202,7 +201,7 @@ export function renderCustomerHome() {
           <!-- 2. Order ID -->
           <div>
             <label style="font-size:0.85rem; font-weight:800; color:#1e293b; display:block; margin-bottom:6px;">2. Order ID</label>
-            <input type="text" id="intake-order" placeholder="e.g. ORD-91823" required value="ORD-91823" style="width:100%; padding:10px 12px; border-radius:10px; border:2px solid #1e293b; font-size:0.88rem; outline:none;" />
+            <input type="text" id="intake-order" placeholder="e.g. ORD-91823" required value="" style="width:100%; padding:10px 12px; border-radius:10px; border:2px solid #1e293b; font-size:0.88rem; outline:none;" />
           </div>
 
           <!-- 3. Invoice Document (Pipeline B) -->
@@ -232,7 +231,7 @@ export function renderCustomerHome() {
           <!-- 5. Defect Description -->
           <div>
             <label style="font-size:0.85rem; font-weight:800; color:#1e293b; display:block; margin-bottom:6px;">5. Defect Description</label>
-            <textarea id="intake-desc" required placeholder="Describe the damage, defect, or missing item in detail..." style="width:100%; padding:10px 12px; border-radius:10px; border:2px solid #1e293b; font-size:0.88rem; outline:none; resize:vertical; min-height:70px;">Item arrived with broken glass display corner and unsealed packaging.</textarea>
+            <textarea id="intake-desc" required placeholder="Describe the damage, defect, or missing item in detail..." style="width:100%; padding:10px 12px; border-radius:10px; border:2px solid #1e293b; font-size:0.88rem; outline:none; resize:vertical; min-height:70px;"></textarea>
           </div>
 
           <div style="display:flex; gap:12px; margin-top:6px;">
@@ -370,7 +369,7 @@ window.cxToggleJsonView = function() {
 window.cxExecute5StepPipeline = async function(event) {
   event.preventDefault();
   const type = document.getElementById('intake-type')?.value || 'Order Dispute';
-  const order = document.getElementById('intake-order')?.value || 'ORD-91823';
+  const order = document.getElementById('intake-order')?.value || '';
   const desc = document.getElementById('intake-desc')?.value || '';
   const photo = document.getElementById('captured-photo-data')?.value || '';
 

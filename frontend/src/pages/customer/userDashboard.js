@@ -43,6 +43,7 @@ export function renderUserDashboard() {
       </div>
 
       <!-- Active Claim Progress Banner -->
+      ${activeClaim ? `
       <div style="background:linear-gradient(135deg,#1e1b4b,#312e81);border-radius:20px;padding:20px 24px;color:#fff;margin-bottom:20px;box-shadow:0 10px 25px rgba(30,27,75,0.2);">
         <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
           <div>
@@ -70,6 +71,7 @@ export function renderUserDashboard() {
           <span><strong>Pipeline:</strong> Camera-Only (A) + Documents (B)</span>
         </div>
       </div>
+      ` : ''}
 
       <!-- 9 Issue Types Grid -->
       <div style="margin-bottom:20px;">
