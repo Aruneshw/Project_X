@@ -2,6 +2,7 @@
  * Enterprise CX Platform — Customer Profile Page
  * Styled completely using the Board Cards visual system and ListContainer visual tokens.
  */
+import { showModal } from '../../../utils/modal.js';
 
 export function renderCustomerProfile() {
   const user = window.cxCurrentUser || 'Praveen';
@@ -64,6 +65,16 @@ export function renderCustomerProfile() {
 
 window.cxSaveProfile = async function(event) {
   event.preventDefault();
+  showModal({
+    title: 'Profile Updated',
+    icon: '✅',
+    type: 'success',
+    body: 'Your profile details have been saved successfully.',
+    lines: [
+      '📍 Contact info updated',
+      '🔒 Changes reflected in your CRM record',
+    ],
+  });
   const name = document.getElementById('profile-name').value;
   const btn = event.target.querySelector('button[type="submit"]');
   

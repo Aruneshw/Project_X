@@ -1,9 +1,8 @@
 /**
  * Enterprise CX Platform — Customer Home Page
- * Styled completely using the Board Cards visual system and ListContainer visual tokens.
  */
-
-import { MOCK_CLAIMS } from '../../../utils/data.js';
+import { MOCK_CLAIMS, MOCK_ACTIVITY } from '../../../utils/data.js';
+import { showModal } from '../../../utils/modal.js';
 
 const ISSUE_TYPES = [
   { icon: '💬', label: 'Customer Complaint',        desc: 'Report a service or product complaint', color: 'red' },
@@ -366,7 +365,7 @@ window.cxOpenCameraOverlay = function() {
       video.srcObject = stream;
     })
     .catch(err => {
-      alert('Camera error: ' + err);
+      showModal({ title: 'Camera Error', icon: '⚠️', type: 'error', body: `Could not access camera: ${err}` });
     });
 };
 
@@ -495,89 +494,23 @@ window.cxExecute5StepPipeline = async function(event) {
     updateStep(5, 'active', '100%', `<span style="color:${data.ai_score >= 80 ? '#059669' : '#dc2626'}; font-weight:800;">⚡ ${data.decision} (Score: ${data.ai_score}%)</span>`);
     
     setTimeout(() => {
-      const modalBody = document.querySelector('#home-claim-modal > div');
-      modalBody.innerHTML = `
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:2px dashed #cbd5e1; padding-bottom:12px;">
-          <div>
-            <h2 style="font-size:1.3rem; font-weight:800; color:#1e293b; margin:0;">AI Resolution & Negotiation</h2>
-            <span style="font-size:0.75rem; color:#4f46e5; font-weight:800;">Agent #10 (Customer Interaction)</span>
-          </div>
-          <button onclick="document.getElementById('home-claim-modal').style.display='none'; if(window.cxNavigate) window.cxNavigate('cases');" style="background:none; border:none; font-size:1.4rem; cursor:pointer; color:#1e293b; font-weight:800;">✕</button>
-        </div>
-        
-        <div style="background:#f8fafc; border:2px solid #e2e8f0; border-radius:12px; padding:16px; height:250px; overflow-y:auto; margin-bottom:16px; display:flex; flex-direction:column; gap:12px;" id="ai-chat-window">
-          
-          <div style="align-self:flex-start; background:#e0e7ff; color:#3730a3; padding:10px 14px; border-radius:12px; border-bottom-left-radius:0; font-size:0.85rem; max-width:85%; border:1.5px solid #c7d2fe;">
-            <strong>AI Agent:</strong> I have analyzed your case (${data.claim_id}). Based on our Enterprise Policy RAG: <em>"${data.policy_applied}"</em>. My confidence score is ${data.ai_score}%.
-          </div>
-          
-          <div style="align-self:flex-start; background:#e0e7ff; color:#3730a3; padding:10px 14px; border-radius:12px; border-bottom-left-radius:0; font-size:0.85rem; max-width:85%; border:1.5px solid #c7d2fe;">
-            <strong>AI Agent:</strong> ${data.rationale} <br/><br/>
-            <strong>My Proposal:</strong> I am authorized to offer you a <strong>${data.decision}</strong>. If you accept this, I can process it instantly right now. What do you say?
-          </div>
-          
-        </div>
-        
-        <div style="display:flex; gap:8px;">
-          <input type="text" id="ai-chat-input" placeholder="Type your response... (e.g. 'I accept')" style="flex:1; padding:10px 12px; border-radius:10px; border:2px solid #1e293b; font-size:0.88rem; outline:none;" />
-          <button type="button" class="btn btn-primary" onclick="cxSendChatNegotiation('${data.claim_id}', '${type}', '${order}', ${data.ai_score})" style="border:2px solid #1e293b; box-shadow:2px 2px 0 #1e293b;">Send</button>
-        </div>
-      `;
-    }, 1000);
-
-  } catch (err) {
-    updateStep(5, 'active', '100%', '<span style="color:#dc2626; font-weight:800;">Error contacting API</span>');
-    alert("Could not connect to backend orchestration API. Ensure Uvicorn is running on port 8000.");
-  }
-};
-
-window.cxSendChatNegotiation = function(claimId, type, order, score) {
-   const input = document.getElementById('ai-chat-input');
-   const chatWindow = document.getElementById('ai-chat-window');
-   const val = input.value.trim();
-   if(!val) return;
-   
-   chatWindow.innerHTML += `
-      <div style="align-self:flex-end; background:#1e293b; color:#fff; padding:10px 14px; border-radius:12px; border-bottom-right-radius:0; font-size:0.85rem; max-width:85%; border:1.5px solid #0f172a;">
-        <strong>You:</strong> ${val}
-      </div>
-   `;
-   input.value = '';
-   chatWindow.scrollTop = chatWindow.scrollHeight;
-   
-   setTimeout(() => {
-     let aiReply = "I understand your perspective. I have escalated your counter-offer to a human agent. They will contact you shortly.";
-     let finalStatus = "processing";
-     
-     if (val.toLowerCase().includes('accept') || val.toLowerCase().includes('yes') || val.toLowerCase().includes('ok') || val.toLowerCase().includes('agree') || val.toLowerCase().includes('fine') || val.toLowerCase().includes('good')) {
-       aiReply = "Excellent! I have recorded your acceptance. The resolution has been automatically applied to your account. Thank you for your cooperation!";
-       finalStatus = "resolved";
-     }
-     
-     chatWindow.innerHTML += `
-        <div style="align-self:flex-start; background:#ecfdf5; color:#065f46; padding:10px 14px; border-radius:12px; border-bottom-left-radius:0; font-size:0.85rem; max-width:85%; border:1.5px solid #a7f3d0;">
-          <strong>AI Agent:</strong> ${aiReply}
-        </div>
-     `;
-     chatWindow.scrollTop = chatWindow.scrollHeight;
-     
-      MOCK_CLAIMS.unshift({
-        id: claimId,
-        type: type,
-        customer: window.cxCurrentUser || 'User',
-        order: order,
-        status: finalStatus,
-        score: score,
-        agent: 'Agent #10 (Workflow)',
-        created: new Date().toISOString().split('T')[0]
+      document.getElementById('home-claim-modal').style.display = 'none';
+      showModal({
+        title: '5-Step Pipeline Execution Complete! 🎉',
+        icon: '🎉',
+        type: 'success',
+        body: 'AI Confidence Score: 92% — exceeded the 80% Auto-Resolve Threshold.',
+        lines: [
+          `📦 Dispute Type: ${type}`,
+          `🏷️ Order: ${order}`,
+          '💸 Workflow Execution Agent (#10) issued a full refund of $1,299.00',
+          '📧 Refund sent to your original payment method',
+        ],
+        confirmText: 'View My Cases',
+        onConfirm: () => { if (window.cxNavigate) window.cxNavigate('cases'); },
       });
-      
-      setTimeout(() => {
-         document.getElementById('home-claim-modal').style.display = 'none';
-         if (window.cxNavigate) window.cxNavigate('cases');
-      }, 3500);
-      
-   }, 1500);
+    }, 1200);
+  }, 4800);
 };
 
 // Initialize camera overlay and invoice file listener
