@@ -498,3 +498,47 @@ a { color: var(--cx-primary); text-decoration: none; }
 .lc-progress-fill { height: 100%; background-color: var(--lc-progress-fill); border-radius: 6px; transition: width 0.3s ease; }
 .lc-value { font-size: 0.88rem; font-weight: 800; color: var(--lc-text-muted); margin-left: auto; }
 
+.grid-responsive { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.content-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+
+/* Stats Card missing styles */
+.stat-card { background: var(--cx-bg-card); border: 1px solid var(--cx-border); border-radius: var(--cx-radius); padding: 20px; }
+.stat-card__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+.stat-card__icon { width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+.stat-card__icon.purple { background: #f3e8ff; color: #9333ea; }
+.stat-card__icon.green { background: #dcfce7; color: #16a34a; }
+.stat-card__icon.orange { background: #fef3c7; color: #d97706; }
+.stat-card__icon.red { background: #fee2e2; color: #dc2626; }
+.stat-card__trend { font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; }
+.stat-card__trend.up { background: #dcfce7; color: #15803d; }
+.stat-card__trend.down { background: #fee2e2; color: #b91c1c; }
+.stat-card__value { font-size: 1.8rem; font-weight: 800; margin-bottom: 4px; color: var(--cx-text); }
+.stat-card__label { font-size: 0.85rem; color: var(--cx-text-muted); font-weight: 600; }
+
+/* ── Mobile Responsiveness ────────────────────────────────────────────── */
+@media (max-width: 1024px) {
+  .app-layout { grid-template-columns: 220px 1fr; }
+  .right-panel { display: none; }
+  .content-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 768px) {
+  .app-layout { display: flex; flex-direction: column; min-height: 100vh; }
+  
+  .sidebar { 
+    height: auto; position: static; border-right: none; border-bottom: 1px solid var(--cx-border); 
+    padding: 10px; flex-direction: row; align-items: center; justify-content: space-between;
+  }
+  .sidebar__nav, .sidebar__scene, .sidebar__help { display: none; }
+  .sidebar__brand { padding: 0; }
+  
+  .main-content { padding: 16px; flex: 1; }
+  
+  .greeting-bar { flex-direction: column; gap: 16px; }
+  .greeting-bar__actions { width: 100%; justify-content: space-between; }
+  
+  .grid-responsive { grid-template-columns: 1fr; }
+  
+  .claim-table { display: block; overflow-x: auto; white-space: nowrap; }
+}

@@ -10,6 +10,12 @@ import { supabase } from '../../utils/supabase.js';
 
 export function renderLogin() {
   return `
+    <style>
+      .login-grid { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; }
+      @media (max-width: 768px) {
+        .login-grid { grid-template-columns: 1fr; }
+      }
+    </style>
     <div class="login-portal-wrapper" style="max-width: 850px; margin: 40px auto; padding: 24px; display:flex; flex-direction:column; gap:24px;">
       
       <!-- Brand Header (Pinned Board Card style - Coral Red) -->
@@ -26,7 +32,7 @@ export function renderLogin() {
       </div>
 
       <!-- Main Login Container Card -->
-      <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap:20px;">
+      <div class="login-grid">
         
         <!-- Form Section (ListContainer style) -->
         <div class="lc-card" style="padding: 36px; display: flex; flex-direction: column; justify-content: center;">
