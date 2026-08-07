@@ -6,7 +6,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.core.config import settings
-from backend.core.logging import setup_logging, get_logger
+from core.logging import setup_logging, get_logger
+from database.redis.connection import init_redis, close_redis
+from database.elasticsearch.connection import init_es, close_es
+from database.vector_db.connection import vector_db
 
 from api.routes import agent_monitor
 from api.routes import claims
@@ -18,13 +21,19 @@ logger = get_logger("main")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: Start the Kafka background consumer loop
-    logger.info("Starting up FastAPI. Initializing Kafka WebSocket Streamer...")
+    # Startup: Initialize Databases and Kafka
+    logger.info("Starting up FastAPI. Initializing services...")
+    await init_redis()
+    await init_es()
+    vector_db.connect()
+    
     streamer.start_background_task()
     yield
-    # Shutdown: Stop the Kafka consumer
-    logger.info("Shutting down FastAPI. Stopping Kafka Streamer...")
+    # Shutdown: Close connections
+    logger.info("Shutting down FastAPI. Stopping services...")
     streamer.stop_background_task()
+    await close_redis()
+    await close_es()
 
 app = FastAPI(
     title=settings.APP_NAME,
