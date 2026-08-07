@@ -9,6 +9,7 @@ from backend.core.config import settings
 from backend.core.logging import setup_logging, get_logger
 
 from api.routes import agent_monitor
+from api.routes import claims
 from services.kafka_streamer import streamer
 
 setup_logging()
@@ -42,6 +43,7 @@ app.add_middleware(
 
 # Mount Routers
 app.include_router(agent_monitor.router, prefix="/api/monitor", tags=["Monitoring"])
+app.include_router(claims.router, prefix="/api/v1/claims", tags=["Claims Orchestration"])
 
 @app.get("/")
 async def root():

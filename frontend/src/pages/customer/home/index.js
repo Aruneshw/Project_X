@@ -367,65 +367,56 @@ window.cxToggleJsonView = function() {
   if (v) v.style.display = (v.style.display === 'none' ? 'block' : 'none');
 };
 
-window.cxExecute5StepPipeline = function(event) {
+window.cxExecute5StepPipeline = async function(event) {
   event.preventDefault();
   const type = document.getElementById('intake-type')?.value || 'Order Dispute';
   const order = document.getElementById('intake-order')?.value || 'ORD-91823';
+  const desc = document.getElementById('intake-desc')?.value || '';
+  const photo = document.getElementById('captured-photo-data')?.value || '';
 
   const form = document.getElementById('intake-form');
   const stepper = document.getElementById('pipeline-stepper-view');
   if (form) form.style.display = 'none';
   if (stepper) stepper.style.display = 'block';
 
-  // Step 2 Execution
-  setTimeout(() => {
-    const s2 = document.getElementById('exec-step-2-status');
-    const pb2 = document.getElementById('pb-step-2');
-    const s3 = document.getElementById('exec-step-3-status');
-    const pb3 = document.getElementById('pb-step-3');
-    if (s2) s2.innerHTML = '<span style="color:#059669; font-weight:800;">✓ Pass</span>';
-    if (pb2) pb2.style.width = '100%';
-    if (s3) s3.innerHTML = '⏳ Running...';
-    if (pb3) pb3.style.width = '30%';
-  }, 1200);
+  // Animate steps while calling backend
+  const updateStep = (step, status, width, text) => {
+    const s = document.getElementById(`exec-step-${step}-status`);
+    const pb = document.getElementById(`pb-step-${step}`);
+    if (s) s.innerHTML = text;
+    if (pb) pb.style.width = width;
+  };
 
-  // Step 3 Execution
-  setTimeout(() => {
-    const s3 = document.getElementById('exec-step-3-status');
-    const pb3 = document.getElementById('pb-step-3');
-    const s4 = document.getElementById('exec-step-4-status');
-    const pb4 = document.getElementById('pb-step-4');
-    if (s3) s3.innerHTML = '<span style="color:#059669; font-weight:800;">✓ Pass</span>';
-    if (pb3) pb3.style.width = '100%';
-    if (s4) s4.innerHTML = '⏳ OCR Parsing...';
-    if (pb4) pb4.style.width = '40%';
-  }, 2400);
+  updateStep(2, 'active', '100%', '<span style="color:#059669; font-weight:800;">✓ Pass</span>');
+  updateStep(3, 'active', '50%', '⏳ CV & Policy RAG...');
 
-  // Step 4 Execution
-  setTimeout(() => {
-    const s4 = document.getElementById('exec-step-4-status');
-    const pb4 = document.getElementById('pb-step-4');
-    const s5 = document.getElementById('exec-step-5-status');
-    const pb5 = document.getElementById('pb-step-5');
-    if (s4) s4.innerHTML = '<span style="color:#059669; font-weight:800;">✓ Pass</span>';
-    if (pb4) pb4.style.width = '100%';
-    if (s5) s5.innerHTML = '⏳ Scoring...';
-    if (pb5) pb5.style.width = '50%';
-  }, 3600);
-
-  // Step 5 Execution & Outcome
-  setTimeout(() => {
-    const s5 = document.getElementById('exec-step-5-status');
-    const pb5 = document.getElementById('pb-step-5');
-    if (s5) s5.innerHTML = '<span style="color:#059669; font-weight:800;">⚡ Refunded (Score: 92%)</span>';
-    if (pb5) pb5.style.width = '100%';
+  try {
+    const res = await fetch(import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL + '/api/v1/claims/process' : 'http://localhost:8000/api/v1/claims/process', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type, order, description: desc, image_b64: photo })
+    });
+    const data = await res.json();
+    
+    updateStep(3, 'active', '100%', '<span style="color:#059669; font-weight:800;">✓ Pass</span>');
+    updateStep(4, 'active', '100%', '<span style="color:#059669; font-weight:800;">✓ Pass</span>');
+    updateStep(5, 'active', '100%', `<span style="color:${data.ai_score >= 80 ? '#059669' : '#dc2626'}; font-weight:800;">⚡ ${data.decision} (Score: ${data.ai_score}%)</span>`);
     
     setTimeout(() => {
       document.getElementById('home-claim-modal').style.display = 'none';
-      alert(`🎉 5-Step Pipeline Execution Complete!\n\nDispute Type: ${type}\nOrder: ${order}\nAI Confidence Score: 92% (>80% Auto-Resolve Threshold)\n\nWorkflow Execution Agent (#10) has issued a full refund of $1,299.00 to your original payment method.`);
+      let msg = `🤖 AI Orchestration Complete!\n\nDispute Type: ${type}\nOrder: ${order}\nAI Confidence Score: ${data.ai_score}%\nOutcome: ${data.decision}\n\n📝 Policy Retrieved (RAG): ${data.policy_applied}\n🧠 Agent Rationale: ${data.rationale}`;
+      
+      if (data.self_healing_action) {
+        msg += `\n\n⚠️ Self-Healing Trigger: ${data.self_healing_action}`;
+      }
+      alert(msg);
       if (window.cxNavigate) window.cxNavigate('cases');
-    }, 1200);
-  }, 4800);
+    }, 1000);
+
+  } catch (err) {
+    updateStep(5, 'active', '100%', '<span style="color:#dc2626; font-weight:800;">Error contacting API</span>');
+    alert("Could not connect to backend orchestration API. Ensure Uvicorn is running on port 8000.");
+  }
 };
 
 // Initialize camera overlay and invoice file listener
