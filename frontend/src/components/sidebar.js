@@ -7,18 +7,21 @@ export function renderSidebar(currentPage) {
   ];
 
   return `
-    <aside class="sidebar">
+    <aside class="sidebar" id="app-sidebar">
       <div class="sidebar__brand">
-        <div class="sidebar__logo-icon">🌿</div>
-        <div class="sidebar__brand-text">
-          <div class="sidebar__brand-name">cxplatform</div>
-          <div class="sidebar__brand-sub">Customer Resolution</div>
+        <div style="display:flex; align-items:center; gap:10px;">
+          <div class="sidebar__logo-icon">🌿</div>
+          <div class="sidebar__brand-text">
+            <div class="sidebar__brand-name">cxplatform</div>
+            <div class="sidebar__brand-sub">Customer Resolution</div>
+          </div>
         </div>
+        <button class="mobile-menu-btn" onclick="document.getElementById('app-sidebar').classList.toggle('mobile-open')">⋮</button>
       </div>
 
       <nav class="sidebar__nav">
         ${NAV.map(n => `
-          <button class="sidebar__link ${currentPage === n.id ? 'active' : ''}" data-nav="${n.id}">
+          <button class="sidebar__link ${currentPage === n.id ? 'active' : ''}" data-nav="${n.id}" onclick="document.getElementById('app-sidebar').classList.remove('mobile-open'); if(window.cxNavigate) window.cxNavigate('${n.id}')">
             <span class="nav-icon">${n.icon}</span>
             <span>${n.label}</span>
           </button>
