@@ -1,9 +1,12 @@
-export function renderHome() {
+export function renderHome(user) {
+  const firstName = user?.user_metadata?.full_name?.split(' ')[0] || 'User';
+  const initial = firstName.charAt(0).toUpperCase();
+
   return `
     <!-- Greeting Bar -->
     <div class="greeting-bar">
       <div>
-        <h1>Hello, Praveen 👋</h1>
+        <h1>Hello, ${firstName} 👋</h1>
         <p>How can we help you today?</p>
       </div>
       <div class="greeting-bar__actions">
@@ -11,10 +14,10 @@ export function renderHome() {
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
           <div class="dot"></div>
         </div>
-        <div class="greeting-bar__user">
-          <div class="greeting-bar__avatar">P</div>
-          <span class="greeting-bar__name">Praveen</span>
-          <span class="greeting-bar__chevron">▾</span>
+        <div class="greeting-bar__user" id="btn-sign-out" title="Sign Out">
+          <div class="greeting-bar__avatar">${initial}</div>
+          <span class="greeting-bar__name">${firstName}</span>
+          <span class="greeting-bar__chevron" style="margin-left: 4px; font-size: 1rem;">🚪</span>
         </div>
       </div>
     </div>
