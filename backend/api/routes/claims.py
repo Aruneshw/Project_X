@@ -6,7 +6,7 @@ import random
 
 # In a real environment, you would import the orchestrator:
 # from backend.orchestrator.agent_orchestrator import AgentOrchestrator
-# Since the LLM keys might not be present, we implement a self-healing mock that dynamically evaluates the text & image properties.
+from services.rag_service import rag_service
 
 router = APIRouter()
 
@@ -34,12 +34,15 @@ async def process_claim(request: ClaimRequest):
     
     desc_lower = request.description.lower()
     
-    # 1. Simulate RAG Policy Retrieval
-    policy = "Standard 30-day return policy applies."
-    if "warranty" in desc_lower:
-        policy = "Warranty Terms v1.8: Covers manufacturer defects for 1 year. Requires clear photographic evidence of structural failure."
-    elif "shipping" in desc_lower or "late" in desc_lower:
-        policy = "Delivery SLA Agreement v3.1: Refunds issued for delays exceeding 5 business days."
+    # 1. Real RAG Policy Retrieval
+    rag_result = rag_service.query_policies(request.description)
+    if rag_result["policy_match"]:
+        policy = f"Policy Match Score: {rag_result['policy_match_score']}%\n"
+        for p in rag_result["applicable_policies"]:
+            policy += f"Applicable Policy: {p['document']} {p['section']}\n"
+            policy += f"Source/Citation: {p['content_snippet']}\n"
+    else:
+        policy = "Unable to determine policy eligibility from the available enterprise knowledge base. Human review required."
     
     # 2. Simulate CNN / RNN Object Detection & Fake Image analysis
     # If the description mentions "fake", or if the image size/properties indicate fabrication

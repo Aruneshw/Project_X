@@ -35,3 +35,8 @@ opencv-python-headless
 mediapipe
 ultralytics
 numpy
+faiss-cpu
+pymupdf
+sentence-transformers
+langchain-huggingface
+langchain-community
