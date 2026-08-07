@@ -23,7 +23,7 @@ import {
   renderAnalytics,
 } from './pages/index.js';
 
-const state = { currentPage: 'home', user: null };
+const state = { currentPage: sessionStorage.getItem('currentPage') || 'home', user: null };
 
 const pages = {
   home:           renderHome,
@@ -42,6 +42,7 @@ const pages = {
 
 function navigate(page) {
   state.currentPage = page;
+  sessionStorage.setItem('currentPage', page);
   render();
 }
 
@@ -118,8 +119,20 @@ if (supabase) {
   });
 
   supabase.auth.onAuthStateChange((_event, session) => {
+    const wasAuth = window.cxIsAuthenticated;
     setSessionState(session);
-    render();
+    
+    // Only re-render if the authentication status actually changed (e.g. login/logout)
+    // This prevents the UI (and modals) from resetting when returning from a file picker
+    // or when Supabase silently refreshes the token in the background.
+    if (wasAuth !== window.cxIsAuthenticated || _event === 'SIGNED_OUT' || _event === 'SIGNED_IN') {
+      // If we just signed in and we are on the login page, go to the default dashboard
+      if (window.cxIsAuthenticated && state.currentPage === 'login') {
+        navigate(window.cxCurrentRole === 'admin' ? 'adminDashboard' : 'userDashboard');
+      } else {
+        render();
+      }
+    }
   });
 } else {
   // Graceful degradation for missing env vars
