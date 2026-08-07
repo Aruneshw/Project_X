@@ -220,11 +220,12 @@ export function renderCustomerHome() {
               <strong>Gallery Selection Disabled:</strong> Platform policy restricts file picker. Only live WebRTC camera capture is permitted for visual damage.
             </div>
             <button type="button" class="btn btn-secondary" onclick="cxOpenCameraOverlay()" id="btn-camera-photo-trigger" style="width:100%; border:2px solid #1e293b; color:#1e293b; font-weight:800; box-shadow:2px 2px 0 #1e293b;">
-              📷 Capture Live Photo via Camera
+              📷 Capture Live Photo & Video
             </button>
             <input type="hidden" id="captured-photo-data" name="captured-photo-data">
+            <input type="hidden" id="captured-video-data" name="captured-video-data">
             <div id="camera-status-note" style="font-size:0.78rem; color:#16a34a; font-weight:700; margin-top:6px; display:none;">
-              ✓ Live photo captured.
+              ✓ Live photo & 3s analysis video captured.
             </div>
           </div>
 
@@ -325,7 +326,7 @@ window.cxOpenCameraOverlay = function() {
   if (!overlay) return;
   overlay.style.display = 'flex';
   const video = document.getElementById('camera-video');
-  navigator.mediaDevices.getUserMedia({ video: true })
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false })
     .then(stream => {
       window.cameraStream = stream;
       video.srcObject = stream;
@@ -337,6 +338,9 @@ window.cxOpenCameraOverlay = function() {
 
 window.cxCapturePhoto = function() {
   const video = document.getElementById('camera-video');
+  const btn = document.querySelector('#camera-overlay .btn-primary');
+  
+  // Capture photo
   const canvas = document.createElement('canvas');
   canvas.width = video.videoWidth;
   canvas.height = video.videoHeight;
@@ -344,13 +348,35 @@ window.cxCapturePhoto = function() {
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   const dataURL = canvas.toDataURL('image/jpeg');
   document.getElementById('captured-photo-data').value = dataURL;
-  const note = document.getElementById('camera-status-note');
-  if (note) { note.textContent = '✓ Live photo captured.'; note.style.display = 'block'; }
-  if (window.cameraStream) {
-    window.cameraStream.getTracks().forEach(t => t.stop());
-  }
-  const overlay = document.getElementById('camera-overlay');
-  if (overlay) overlay.style.display = 'none';
+  
+  // Start recording a 3-second video for YOLOv8 fraud analysis
+  btn.textContent = 'Recording 3s video...';
+  btn.disabled = true;
+  
+  let chunks = [];
+  const recorder = new MediaRecorder(window.cameraStream);
+  recorder.ondataavailable = e => chunks.push(e.data);
+  recorder.onstop = () => {
+    const blob = new Blob(chunks, { type: 'video/webm' });
+    const reader = new FileReader();
+    reader.onloadend = function() {
+      document.getElementById('captured-video-data').value = reader.result;
+      
+      const note = document.getElementById('camera-status-note');
+      if (note) { note.style.display = 'block'; }
+      if (window.cameraStream) { window.cameraStream.getTracks().forEach(t => t.stop()); }
+      const overlay = document.getElementById('camera-overlay');
+      if (overlay) overlay.style.display = 'none';
+      btn.textContent = 'Take Photo & Video';
+      btn.disabled = false;
+    }
+    reader.readAsDataURL(blob);
+  };
+  
+  recorder.start();
+  setTimeout(() => {
+    recorder.stop();
+  }, 3000);
 };
 
 window.cxCloseCameraOverlay = function() {
@@ -372,6 +398,8 @@ window.cxExecute5StepPipeline = async function(event) {
   const order = document.getElementById('intake-order')?.value || '';
   const desc = document.getElementById('intake-desc')?.value || '';
   const photo = document.getElementById('captured-photo-data')?.value || '';
+  const video = document.getElementById('captured-video-data')?.value || '';
+  const invoiceName = document.getElementById('intake-invoice')?.files[0]?.name || '';
 
   const form = document.getElementById('intake-form');
   const stepper = document.getElementById('pipeline-stepper-view');
@@ -393,7 +421,7 @@ window.cxExecute5StepPipeline = async function(event) {
     const res = await fetch(import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL + '/api/v1/claims/process' : 'http://localhost:8000/api/v1/claims/process', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type, order, description: desc, image_b64: photo })
+      body: JSON.stringify({ type, order, description: desc, image_b64: photo, video_b64: video, invoice_name: invoiceName })
     });
     const data = await res.json();
     
@@ -426,7 +454,7 @@ window.cxExecute5StepPipeline = async function(event) {
       <div style="background:#fff; border: 2.5px solid #1e293b; padding:20px; border-radius:12px; text-align:center; box-shadow: 6px 6px 0 #1e293b;">
         <video id="camera-video" autoplay playsinline style="width:300px; border-radius:8px; border:2.5px solid #1e293b;"></video>
         <div style="margin-top:12px; display:flex; gap:10px; justify-content:center;">
-          <button class="btn btn-primary" onclick="cxCapturePhoto()" style="border: 2px solid #1e293b;">Take Photo</button>
+          <button class="btn btn-primary" onclick="cxCapturePhoto()" style="border: 2px solid #1e293b;">Take Photo & Video</button>
           <button class="btn btn-secondary" onclick="cxCloseCameraOverlay()" style="border: 2px solid #1e293b;">Cancel</button>
         </div>
       </div>

@@ -42,8 +42,8 @@ export function renderCustomerProfile() {
             <input type="text" value="${user}" required style="width:100%; padding:10px 12px; border-radius:10px; border:2px solid #1e293b; font-size:0.88rem; outline:none;" />
           </div>
           <div>
-            <label style="font-size:0.85rem; font-weight:800; color:#1e293b; display:block; margin-bottom:6px;">Email Address</label>
-            <input type="email" value="${user.toLowerCase()}@customer.com" required style="width:100%; padding:10px 12px; border-radius:10px; border:2px solid #1e293b; font-size:0.88rem; outline:none;" />
+            <label style="font-size:0.85rem; font-weight:800; color:#1e293b; display:block; margin-bottom:6px;">Email Address (Auto-Detected)</label>
+            <input type="email" value="${window.cxCurrentUserEmail || ''}" disabled style="width:100%; padding:10px 12px; border-radius:10px; border:2px solid #1e293b; font-size:0.88rem; outline:none; background:#f1f5f9; cursor:not-allowed;" />
           </div>
           <div>
             <label style="font-size:0.85rem; font-weight:800; color:#1e293b; display:block; margin-bottom:6px;">Preferred Notification Channel</label>

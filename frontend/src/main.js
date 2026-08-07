@@ -96,6 +96,7 @@ function setSessionState(session) {
   if (session?.user) {
     window.cxIsAuthenticated = true;
     window.cxCurrentUser = session.user.user_metadata?.full_name || session.user.email;
+    window.cxCurrentUserEmail = session.user.email || '';
     const email = session.user.email || '';
     window.cxCurrentRole = (email.includes('admin') || email.includes('cxplatform.io') || email === 'aruneshwaran') ? 'admin' : 'user';
     state.user = session.user;
