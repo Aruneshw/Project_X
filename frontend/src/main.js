@@ -4,6 +4,7 @@
  */
 import './style.css';
 import { renderSidebar } from './components/sidebar.js';
+import { supabase } from './utils/supabase.js';
 import {
   renderHome,
   renderRightPanel,
@@ -43,6 +44,7 @@ function navigate(page) {
 }
 
 async function handleSignOut() {
+  await supabase.auth.signOut();
   window.cxIsAuthenticated = false;
   window.cxCurrentRole = null;
   state.currentPage = 'login';
@@ -87,6 +89,31 @@ function render() {
 
 window.cxNavigate = navigate;
 window.cxIsAuthenticated = false;
+window.cxCurrentRole = null;
+window.cxCurrentUser = null;
 
-// Initial render
-render();
+function setSessionState(session) {
+  if (session?.user) {
+    window.cxIsAuthenticated = true;
+    window.cxCurrentUser = session.user.user_metadata?.full_name || session.user.email;
+    const email = session.user.email || '';
+    window.cxCurrentRole = (email.includes('admin') || email.includes('cxplatform.io') || email === 'aruneshwaran') ? 'admin' : 'user';
+    state.user = session.user;
+  } else {
+    window.cxIsAuthenticated = false;
+    window.cxCurrentRole = null;
+    window.cxCurrentUser = null;
+    state.user = null;
+  }
+}
+
+// Initialize auth state
+supabase.auth.getSession().then(({ data: { session } }) => {
+  setSessionState(session);
+  render();
+});
+
+supabase.auth.onAuthStateChange((_event, session) => {
+  setSessionState(session);
+  render();
+});

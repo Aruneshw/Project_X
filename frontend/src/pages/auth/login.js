@@ -6,6 +6,7 @@
 
 import { renderUserDashboard } from '../customer/userDashboard.js';
 import { renderAdminDashboard } from '../admin/adminDashboard.js';
+import { supabase } from '../../utils/supabase.js';
 
 export function renderLogin() {
   return `
@@ -30,51 +31,25 @@ export function renderLogin() {
         <!-- Form Section (ListContainer style) -->
         <div class="lc-card" style="padding: 36px; display: flex; flex-direction: column; justify-content: center;">
           <h2 style="font-size: 1.4rem; font-weight: 800; color: #1e293b; margin-bottom: 4px;">Portal Sign In</h2>
-          <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 20px; font-weight: 700;">Choose your role & enter your credentials:</p>
-
-          <!-- Role Selector Toggle -->
-          <div style="display: flex; background: #e2e8f0; padding: 4px; border-radius: 12px; border:2px solid #1e293b; margin-bottom: 20px; box-shadow: 2px 2px 0 #1e293b;" id="cx-role-toggle">
-            <button id="role-user-btn" type="button" onclick="cxSelectRole('user')" style="flex: 1; padding: 10px 12px; border: none; border-radius: 9px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; background: #ffffff; color: #4f46e5; border: 1.5px solid #1e293b;">
-              👤 User / Customer
-            </button>
-            <button id="role-admin-btn" type="button" onclick="cxSelectRole('admin')" style="flex: 1; padding: 10px 12px; border: none; border-radius: 9px; font-weight: 800; font-size: 0.85rem; cursor: pointer; transition: all 0.2s ease; background: transparent; color: #64748b;">
-              🛡️ Admin / Ops
-            </button>
-          </div>
-
-          <!-- Basic Credentials Box -->
-          <div style="background: #fff; border: 2px dashed #cbd5e1; border-radius: 12px; padding: 12px; margin-bottom: 20px; font-size: 0.82rem; color: #1e293b; border-color:#1e293b;">
-            <div style="font-weight: 800; color: #1e293b; margin-bottom: 4px; display: flex; align-items: center; gap: 6px;">
-              🔑 Default Credentials:
-            </div>
-            <div id="cx-cred-info" style="font-weight:700;">
-              Username: <strong style="color: #4f46e5;">user</strong> &nbsp;|&nbsp; Password: <strong style="color: #4f46e5;">123</strong>
-            </div>
-          </div>
+          <p style="font-size: 0.88rem; color: #64748b; margin-bottom: 20px; font-weight: 700;">Sign in with your corporate or personal Google account.</p>
 
           <!-- Form -->
-          <form onsubmit="cxHandleLogin(event)" style="display: flex; flex-direction: column; gap: 16px;">
-            <input type="hidden" id="cx-login-role" value="user" />
-
-            <div>
-              <label style="display: block; font-size: 0.85rem; font-weight: 800; color: #1e293b; margin-bottom: 6px;">Username</label>
-              <input type="text" id="cx-username" required value="user" placeholder="Enter username" style="width: 100%; padding: 12px 14px; border-radius: 10px; border: 2px solid #1e293b; font-size: 0.9rem; outline: none;" />
-            </div>
-
-            <div>
-              <label style="display: block; font-size: 0.85rem; font-weight: 800; color: #1e293b; margin-bottom: 6px;">Password</label>
-              <input type="password" id="cx-password" required value="123" placeholder="Enter password" style="width: 100%; padding: 12px 14px; border-radius: 10px; border: 2px solid #1e293b; font-size: 0.9rem; outline: none;" />
-            </div>
-
-            <!-- Error Banner -->
-            <div id="cx-login-error" style="display: none; background: #fef2f2; border: 2px solid #ef4444; color: #dc2626; padding: 10px; border-radius: 8px; font-size: 0.8rem; font-weight: 800; box-shadow: 2px 2px 0 #ef4444;">
-              Invalid username or password. Use default credentials above.
-            </div>
-
-            <button type="submit" id="cx-submit-btn" class="btn btn-primary" style="width: 100%; padding: 14px; border: 2px solid #1e293b; box-shadow: 3px 3px 0 #1e293b; font-weight:800;">
-              Sign In to User Dashboard →
+          <div style="display: flex; flex-direction: column; gap: 16px;">
+            <button onclick="cxHandleGoogleLogin()" class="btn btn-primary" style="width: 100%; padding: 14px; border: 2px solid #1e293b; border-radius: 10px; box-shadow: 3px 3px 0 #1e293b; font-weight:800; display:flex; align-items:center; justify-content:center; gap:12px; background:white; color:#1e293b; cursor:pointer; transition:all 0.2s ease;">
+              <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+                <g transform="matrix(1, 0, 0, 1, 27.009001, -39.238998)">
+                  <path fill="#4285F4" d="M -3.264 51.509 C -3.264 50.719 -3.334 49.969 -3.454 49.239 L -14.754 49.239 L -14.754 53.749 L -8.284 53.749 C -8.574 55.229 -9.424 56.479 -10.684 57.329 L -10.684 60.329 L -6.824 60.329 C -4.564 58.239 -3.264 55.159 -3.264 51.509 Z"/>
+                  <path fill="#34A853" d="M -14.754 63.239 C -11.514 63.239 -8.804 62.159 -6.824 60.329 L -10.684 57.329 C -11.764 58.049 -13.134 58.489 -14.754 58.489 C -17.884 58.489 -20.534 56.379 -21.484 53.529 L -25.464 53.529 L -25.464 56.619 C -23.494 60.539 -19.444 63.239 -14.754 63.239 Z"/>
+                  <path fill="#FBBC05" d="M -21.484 53.529 C -21.734 52.809 -21.864 52.039 -21.864 51.239 C -21.864 50.439 -21.724 49.669 -21.484 48.949 L -21.484 45.859 L -25.464 45.859 C -26.284 47.479 -26.754 49.299 -26.754 51.239 C -26.754 53.179 -26.284 54.999 -25.464 56.619 L -21.484 53.529 Z"/>
+                  <path fill="#EA4335" d="M -14.754 43.989 C -12.984 43.989 -11.404 44.599 -10.154 45.789 L -6.734 42.369 C -8.804 40.429 -11.514 39.239 -14.754 39.239 C -19.444 39.239 -23.494 41.939 -25.464 45.859 L -21.484 48.949 C -20.534 46.099 -17.884 43.989 -14.754 43.989 Z"/>
+                </g>
+              </svg>
+              Sign In with Google
             </button>
-          </form>
+            <div style="text-align:center; font-size: 0.75rem; color:#64748b; font-weight:700; margin-top:8px;">
+              Admin access is granted automatically to @cxplatform.io emails.
+            </div>
+          </div>
         </div>
 
         <!-- Right Side Showcase (Warm Orange Board Card style) -->
@@ -106,73 +81,20 @@ export function renderLogin() {
   `;
 }
 
-// Global role toggle helper
-window.cxSelectRole = function(role) {
-  const userBtn = document.getElementById('role-user-btn');
-  const adminBtn = document.getElementById('role-admin-btn');
-  const roleInput = document.getElementById('cx-login-role');
-  const userInput = document.getElementById('cx-username');
-  const passInput = document.getElementById('cx-password');
-  const credInfo = document.getElementById('cx-cred-info');
-  const submitBtn = document.getElementById('cx-submit-btn');
-
-  if (!userBtn || !adminBtn || !roleInput || !userInput || !passInput || !submitBtn) return;
-
-  roleInput.value = role;
-
-  if (role === 'user') {
-    userBtn.style.background = '#ffffff';
-    userBtn.style.color = '#4f46e5';
-    userBtn.style.border = '1.5px solid #1e293b';
-    adminBtn.style.background = 'transparent';
-    adminBtn.style.color = '#64748b';
-    adminBtn.style.border = 'none';
-
-    userInput.value = 'user';
-    passInput.value = '123';
-    if (credInfo) credInfo.innerHTML = `Username: <strong style="color: #4f46e5;">user</strong> &nbsp;|&nbsp; Password: <strong style="color: #4f46e5;">123</strong>`;
-    submitBtn.innerText = 'Sign In to User Dashboard →';
-  } else {
-    adminBtn.style.background = '#ffffff';
-    adminBtn.style.color = '#1e293b';
-    adminBtn.style.border = '1.5px solid #1e293b';
-    userBtn.style.background = 'transparent';
-    userBtn.style.color = '#64748b';
-    userBtn.style.border = 'none';
-
-    userInput.value = 'admin';
-    passInput.value = '123';
-    if (credInfo) credInfo.innerHTML = `Username: <strong style="color: #1e293b;">admin</strong> &nbsp;|&nbsp; Password: <strong style="color: #1e293b;">123</strong>`;
-    submitBtn.innerText = 'Sign In to Admin Operations →';
-  }
-};
-
-// Global login handler with basic username/pass validation
-window.cxHandleLogin = function(event) {
-  event.preventDefault();
-  const role = document.getElementById('cx-login-role')?.value || 'user';
-  const username = document.getElementById('cx-username')?.value?.trim() || '';
-  const password = document.getElementById('cx-password')?.value?.trim() || '';
-  const errorBanner = document.getElementById('cx-login-error');
-
-  const isValidAdmin = (role === 'admin') && (username === 'admin' || username === 'admin@cxplatform.io') && (password === '123' || password === 'admin123');
-  const isValidUser = (role === 'user') && (username === 'user' || username === 'praveen' || username === 'user@company.com') && (password === '123' || password === 'user123');
-
-  if (isValidAdmin || isValidUser || username.length >= 3) {
-    if (errorBanner) errorBanner.style.display = 'none';
-
-    window.cxIsAuthenticated = true;
-    window.cxCurrentRole = role;
-    window.cxCurrentUser = username;
-
-    if (window.cxNavigate) {
-      if (role === 'admin') {
-        window.cxNavigate('adminDashboard');
-      } else {
-        window.cxNavigate('userDashboard');
+window.cxHandleGoogleLogin = async function() {
+  try {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
       }
+    });
+    
+    if (error) {
+      console.error('Error logging in:', error.message);
+      alert('Error logging in: ' + error.message);
     }
-  } else {
-    if (errorBanner) errorBanner.style.display = 'block';
+  } catch (err) {
+    console.error('Exception during login:', err);
   }
 };
