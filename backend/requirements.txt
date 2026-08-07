@@ -1,0 +1,25 @@
+# FastAPI & Core
+fastapi
+uvicorn
+pydantic
+pydantic-settings
+langchain
+langgraph
+langchain-openai
+
+# CV & AI (Agent 3 - CV Object Detection)
+opencv-python-headless
+mediapipe
+ultralytics
+numpy
+
+# Databases
+sqlalchemy
+asyncpg
+redis
+celery
+qdrant-client
+
+# Streaming
+aiokafka
+websockets
