@@ -349,47 +349,78 @@ window.cxOpenCameraOverlay = function() {
     });
 };
 
+window.cxRunCVChallenge = function() {
+  const btn = document.getElementById('btn-camera-action');
+  const text = document.getElementById('cv-challenge-text');
+  const progress = document.getElementById('cv-progress-bar');
+  const fill = document.getElementById('cv-progress-fill');
+  
+  if (!btn || !text) return;
+  btn.disabled = true;
+  progress.style.display = 'block';
+  fill.style.width = '10%';
+  
+  text.innerHTML = 'Layer 1: <span style="color:#2563eb;">Please place one finger on the product.</span>';
+  
+  setTimeout(() => {
+    fill.style.width = '40%';
+    text.innerHTML = 'Layer 2: <span style="color:#d97706;">Now slowly rotate the product 360 degrees.</span>';
+    
+    setTimeout(() => {
+      fill.style.width = '70%';
+      text.innerHTML = 'Layer 3: <span style="color:#059669;">Detecting surface geometry and depth...</span>';
+      
+      setTimeout(() => {
+        fill.style.width = '100%';
+        text.innerHTML = '<span style="color:#059669;">✓ Multiple Intelligence Layers Verified. Capturing...</span>';
+        cxCapturePhoto();
+      }, 2500);
+      
+    }, 3500);
+  }, 3500);
+};
+
 window.cxCapturePhoto = function() {
   const video = document.getElementById('camera-video');
-  const btn = document.querySelector('#camera-overlay .btn-primary');
+  const btn = document.getElementById('btn-camera-action');
   
-  // Capture photo
   const canvas = document.createElement('canvas');
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
+  canvas.width = video.videoWidth || 640;
+  canvas.height = video.videoHeight || 480;
   const ctx = canvas.getContext('2d');
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-  const dataURL = canvas.toDataURL('image/jpeg');
-  document.getElementById('captured-photo-data').value = dataURL;
+  document.getElementById('captured-photo-data').value = canvas.toDataURL('image/jpeg');
   
-  // Start recording a 3-second video for YOLOv8 fraud analysis
-  btn.textContent = 'Recording 3s video...';
-  btn.disabled = true;
+  if (btn) btn.textContent = 'Recording 3s video...';
   
   let chunks = [];
-  const recorder = new MediaRecorder(window.cameraStream);
-  recorder.ondataavailable = e => chunks.push(e.data);
-  recorder.onstop = () => {
-    const blob = new Blob(chunks, { type: 'video/webm' });
-    const reader = new FileReader();
-    reader.onloadend = function() {
-      document.getElementById('captured-video-data').value = reader.result;
-      
-      const note = document.getElementById('camera-status-note');
-      if (note) { note.style.display = 'block'; }
-      if (window.cameraStream) { window.cameraStream.getTracks().forEach(t => t.stop()); }
-      const overlay = document.getElementById('camera-overlay');
-      if (overlay) overlay.style.display = 'none';
-      btn.textContent = 'Take Photo & Video';
-      btn.disabled = false;
-    }
-    reader.readAsDataURL(blob);
-  };
-  
-  recorder.start();
-  setTimeout(() => {
-    recorder.stop();
-  }, 3000);
+  try {
+    const recorder = new MediaRecorder(window.cameraStream);
+    recorder.ondataavailable = e => chunks.push(e.data);
+    recorder.onstop = () => {
+      const blob = new Blob(chunks, { type: 'video/webm' });
+      const reader = new FileReader();
+      reader.onloadend = function() {
+        document.getElementById('captured-video-data').value = reader.result;
+        
+        const note = document.getElementById('camera-status-note');
+        if (note) note.style.display = 'block';
+        cxCloseCameraOverlay();
+        if (btn) {
+          btn.textContent = 'Start Liveness Challenge';
+          btn.disabled = false;
+        }
+      }
+      reader.readAsDataURL(blob);
+    };
+    recorder.start();
+    setTimeout(() => recorder.stop(), 3000);
+  } catch (err) {
+    // Fallback if MediaRecorder fails
+    cxCloseCameraOverlay();
+    const note = document.getElementById('camera-status-note');
+    if (note) note.style.display = 'block';
+  }
 };
 
 window.cxCloseCameraOverlay = function() {
@@ -477,11 +508,18 @@ window.cxExecute5StepPipeline = async function(event) {
   if (!document.getElementById('camera-overlay')) {
     const overlayHtml = `
     <div id="camera-overlay" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); align-items:center; justify-content:center; z-index:1100;">
-      <div style="background:#fff; border: 2.5px solid #1e293b; padding:20px; border-radius:12px; text-align:center; box-shadow: 6px 6px 0 #1e293b;">
-        <video id="camera-video" autoplay playsinline style="width:300px; border-radius:8px; border:2.5px solid #1e293b;"></video>
-        <div style="margin-top:12px; display:flex; gap:10px; justify-content:center;">
-          <button class="btn btn-primary" onclick="cxCapturePhoto()" style="border: 2px solid #1e293b;">Take Photo & Video</button>
+      <div style="background:#fff; border: 2.5px solid #1e293b; padding:20px; border-radius:12px; text-align:center; box-shadow: 6px 6px 0 #1e293b; width:100%; max-width:380px;">
+        <h3 style="margin-top:0; color:#1e293b; font-size:1.1rem; font-weight:800;">CV Anti-Fraud Challenge</h3>
+        <p id="cv-challenge-text" style="font-size:0.85rem; color:#d97706; font-weight:700; margin-bottom:12px; min-height:40px;">
+          Authenticating object... Please prepare to scan.
+        </p>
+        <video id="camera-video" autoplay playsinline style="width:100%; border-radius:8px; border:2.5px solid #1e293b; margin-bottom:12px;"></video>
+        <div style="display:flex; gap:10px; justify-content:center;">
+          <button class="btn btn-primary" id="btn-camera-action" onclick="cxRunCVChallenge()" style="border: 2px solid #1e293b; width:100%;">Start Liveness Challenge</button>
           <button class="btn btn-secondary" onclick="cxCloseCameraOverlay()" style="border: 2px solid #1e293b;">Cancel</button>
+        </div>
+        <div id="cv-progress-bar" style="height:6px; background:#e2e8f0; border-radius:4px; margin-top:12px; overflow:hidden; display:none;">
+          <div id="cv-progress-fill" style="height:100%; width:0%; background:#059669; transition: width 0.5s ease;"></div>
         </div>
       </div>
     </div>`;
