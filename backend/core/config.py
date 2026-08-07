@@ -31,7 +31,11 @@ class Settings(BaseSettings):
     HOST: str = "0.0.0.0"
     PORT: int = 8000
     API_PREFIX: str = "/api/v1"
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:5173"]
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "https://project-x-nine-rose.vercel.app"
+    ]
 
     # ── Security / Auth ──────────────────────────────────
     SECRET_KEY: str = Field(default="change-me-in-production-PLEASE")
