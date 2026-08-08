@@ -101,7 +101,7 @@ function setSessionState(session) {
     window.cxCurrentUser = session.user.user_metadata?.full_name || session.user.email;
     window.cxCurrentUserEmail = session.user.email || '';
     const email = session.user.email || '';
-    window.cxCurrentRole = (email.includes('admin') || email.includes('cxplatform.io') || email === 'aruneshwaran') ? 'admin' : 'user';
+    window.cxCurrentRole = (email.includes('admin') || email.includes('cxplatform.io') || email === 'aruneshownsty1@gmail.com') ? 'admin' : 'user';
     state.user = session.user;
   } else {
     window.cxIsAuthenticated = false;
