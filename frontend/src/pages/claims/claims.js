@@ -63,48 +63,16 @@ export function renderClaims() {
               ${isAdmin ? '<th style="text-align:right;">Action</th>' : ''}
             </tr>
           </thead>
-          <tbody>
-            ${MOCK_CLAIMS.map(c => `
-              <tr>
-                <td style="font-family:var(--cx-font-mono);font-weight:700;font-size:0.82rem;color:#4f46e5;">${c.id}</td>
-                <td style="font-weight:500;">${c.customer}</td>
-                <td style="color:var(--cx-text-secondary);">${c.type}</td>
-                <td style="font-family:var(--cx-font-mono);font-size:0.78rem;color:var(--cx-text-muted);">${c.order}</td>
-                <td>
-                  <div class="score-bar">
-                    <div class="score-bar__track">
-                      <div class="score-bar__fill ${c.score >= 80 ? 'high' : c.score >= 50 ? 'mid' : 'low'}"
-                           data-width="${c.score}%" style="width:0%"></div>
-                    </div>
-                    <span class="score-bar__value">${c.score}</span>
-                  </div>
-                </td>
-                <td>
-                  <span style="font-size:0.72rem;font-weight:700;padding:2px 8px;border-radius:10px;
-                    background:${c.score >= 80 ? '#dcfce7' : c.score >= 50 ? '#fef3c7' : '#fee2e2'};
-                    color:${c.score >= 80 ? '#15803d' : c.score >= 50 ? '#b45309' : '#dc2626'};">
-                    ${c.score >= 80 ? '⚡ Auto-Resolve' : c.score >= 50 ? '⚖️ Human Review' : '🚫 Fraud Reject'}
-                  </span>
-                </td>
-                <td><span class="badge-status ${c.status}">${c.status.replace('-', ' ')}</span></td>
-                <td style="font-size:0.82rem;">${c.agent}</td>
-                <td style="font-size:0.78rem;color:var(--cx-text-muted);">${c.created}</td>
-                ${isAdmin ? `
-                  <td style="text-align:right;">
-                    ${c.score >= 50 && c.score < 80
-                      ? `<div style="display:flex;gap:4px;justify-content:flex-end;">
-                           <button onclick="cxAdminApprove && cxAdminApprove('${c.id}')" style="background:#22c55e;color:#fff;border:none;padding:4px 8px;border-radius:6px;font-size:0.72rem;font-weight:700;cursor:pointer;" id="approve-${c.id}">✓</button>
-                           <button onclick="cxAdminReject && cxAdminReject('${c.id}')" style="background:#ef4444;color:#fff;border:none;padding:4px 8px;border-radius:6px;font-size:0.72rem;font-weight:700;cursor:pointer;" id="reject-${c.id}">✕</button>
-                         </div>`
-                      : `<span style="font-size:0.72rem;color:var(--cx-text-muted);">—</span>`
-                    }
-                  </td>` : ''}
-              </tr>
-            `).join('')}
+          <tbody id="claims-tbody">
+            <tr><td colspan="${isAdmin ? 10 : 9}" style="text-align:center; padding:20px; color:#64748b;">Loading claims...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
+    
+    <script>
+      setTimeout(() => { if (window.cxLoadClaims) window.cxLoadClaims(); }, 100);
+    </script>
 
     <!-- Score Routing Thresholds Info -->
     <div class="card" style="margin-top:18px;" id="card-thresholds">
@@ -200,4 +168,77 @@ window.cxSubmitNewClaim = function(event) {
     confirmText: 'Continue to Evidence',
     onConfirm: () => { if (window.cxNavigate) window.cxNavigate('evidence'); },
   });
+};
+
+window.cxLoadClaims = async function() {
+  const tbody = document.getElementById('claims-tbody');
+  if (!tbody) return;
+  const isAdmin = window.cxCurrentRole === 'admin';
+  
+  if (!window.supabase) {
+    tbody.innerHTML = \`<tr><td colspan="\${isAdmin ? 10 : 9}" style="text-align:center; padding:20px; color:#dc2626;">Supabase client not initialized.</td></tr>\`;
+    return;
+  }
+
+  try {
+    const { data: userResp } = await window.supabase.auth.getUser();
+    const user = userResp?.user;
+    
+    let query = window.supabase.from('user_history').select('*').order('created_at', { ascending: false });
+    
+    // If not admin, only fetch their own claims
+    if (!isAdmin && user) {
+      query = query.eq('user_id', user.id);
+    }
+    
+    const { data: claims, error } = await query;
+
+    if (error) throw error;
+
+    if (claims && claims.length > 0) {
+      tbody.innerHTML = claims.map(c => {
+        const score = c.ai_score || 0;
+        return \`
+        <tr>
+          <td style="font-family:var(--cx-font-mono);font-weight:700;font-size:0.82rem;color:#4f46e5;">\${c.claim_id}</td>
+          <td style="font-weight:500;">\${c.user_id ? c.user_id.substring(0,8)+'...' : 'Unknown'}</td>
+          <td style="color:var(--cx-text-secondary);">\${c.issue_type}</td>
+          <td style="font-family:var(--cx-font-mono);font-size:0.78rem;color:var(--cx-text-muted);">\${c.description ? c.description.substring(0, 15)+'...' : 'N/A'}</td>
+          <td>
+            <div class="score-bar">
+              <div class="score-bar__track">
+                <div class="score-bar__fill \${score >= 80 ? 'high' : score >= 50 ? 'mid' : 'low'}"
+                     style="width:\${score}%"></div>
+              </div>
+              <span class="score-bar__value">\${score}%</span>
+            </div>
+          </td>
+          <td>
+            <span style="font-size:0.72rem;font-weight:700;padding:2px 8px;border-radius:10px;
+              background:\${score >= 80 ? '#dcfce7' : score >= 50 ? '#fef3c7' : '#fee2e2'};
+              color:\${score >= 80 ? '#15803d' : score >= 50 ? '#b45309' : '#dc2626'};">
+              \${score >= 80 ? '⚡ Auto-Resolve' : score >= 50 ? '⚖️ Human Review' : '🚫 Fraud Reject'}
+            </span>
+          </td>
+          <td><span class="badge-status \${c.status === 'Reject' ? 'rejected' : 'resolved'}">\${c.status.replace('-', ' ')}</span></td>
+          <td style="font-size:0.82rem;">Agent #10</td>
+          <td style="font-size:0.78rem;color:var(--cx-text-muted);">\${new Date(c.created_at).toLocaleDateString()}</td>
+          \${isAdmin ? \`
+            <td style="text-align:right;">
+              \${score >= 50 && score < 80
+                ? \`<div style="display:flex;gap:4px;justify-content:flex-end;">
+                     <button style="background:#22c55e;color:#fff;border:none;padding:4px 8px;border-radius:6px;font-size:0.72rem;font-weight:700;cursor:pointer;">✓</button>
+                     <button style="background:#ef4444;color:#fff;border:none;padding:4px 8px;border-radius:6px;font-size:0.72rem;font-weight:700;cursor:pointer;">✕</button>
+                   </div>\`
+                : \`<span style="font-size:0.72rem;color:var(--cx-text-muted);">—</span>\`
+              }
+            </td>\` : ''}
+        </tr>
+      \`}).join('');
+    } else {
+      tbody.innerHTML = \`<tr><td colspan="\${isAdmin ? 10 : 9}" style="text-align:center; padding:20px; color:#64748b;">No claims found.</td></tr>\`;
+    }
+  } catch (err) {
+    tbody.innerHTML = \`<tr><td colspan="\${isAdmin ? 10 : 9}" style="text-align:center; padding:20px; color:#dc2626;">Error loading claims: \${err.message}</td></tr>\`;
+  }
 };
