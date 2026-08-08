@@ -19,6 +19,17 @@ def check_redis():
         r.set("session:user_123", "active")
         r.set("session:user_123_duplicate", "active")
         print("✅ Duplicate data added to Redis.")
+
+        print("Adding RAG policy for electronics to Redis...")
+        electronics_policy = """
+Electronics Return & Replacement Policy:
+- Mobile Phones: Eligible for return within 14 days if unboxed or damaged on delivery. Requires video proof of unboxing.
+- Airbuds/Earphones: Eligible for replacement within 7 days if defective. No returns for hygiene reasons unless sealed.
+- Chargers & Cables: 30-day replacement warranty for manufacturing defects. Not eligible for refund.
+- Other Electronics: Standard 14-day return window, must include all original accessories and packaging.
+        """
+        r.set("rag_policy:electronics", electronics_policy.strip())
+        print("✅ Electronics RAG policy added to Redis.")
     except Exception as e:
         print(f"❌ Redis connection failed: {e}")
         print("Please ensure Redis is running (e.g. docker run -d -p 6379:6379 redis)")
