@@ -74,6 +74,27 @@ export function renderClaims() {
       setTimeout(() => { if (window.cxLoadClaims) window.cxLoadClaims(); }, 100);
     </script>
 
+    <!-- RAG AI Chat Assistant -->
+    <div class="card" style="margin-top:20px; border:2px solid #6366f1; box-shadow:4px 4px 0 #6366f1;" id="card-rag-chat">
+      <div class="card__header" style="background:#e0e7ff; border-radius:12px 12px 0 0; padding:12px 16px; border-bottom:2px solid #6366f1;">
+        <span class="card__title" style="color:#4338ca; display:flex; align-items:center; gap:8px;">
+          🤖 Agent #12 (RAG Policy Assistant)
+        </span>
+        <span style="font-size:0.75rem; color:#4f46e5; font-weight:700;">Ask about Orders, Policies, or FAQs</span>
+      </div>
+      <div class="card__body" style="padding:0;">
+        <div id="rag-chat-messages" style="height:200px; overflow-y:auto; padding:16px; background:#f8fafc; display:flex; flex-direction:column; gap:12px;">
+          <div style="align-self:flex-start; background:#fff; padding:10px 14px; border-radius:12px 12px 12px 0; border:1px solid #cbd5e1; font-size:0.85rem; max-width:80%; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+            Hello! I'm the Knowledge Base Agent. You can ask me questions like "What is the return policy for Order ORD-12345?"
+          </div>
+        </div>
+        <div style="padding:12px; border-top:1px solid #e2e8f0; background:#fff; display:flex; gap:10px;">
+          <input type="text" id="rag-chat-input" placeholder="Type your question..." onkeypress="if(event.key === 'Enter') cxSendRagChat()" style="flex:1; padding:10px 14px; border-radius:8px; border:1px solid #cbd5e1; font-size:0.88rem; outline:none;" />
+          <button onclick="cxSendRagChat()" class="btn btn-primary" style="border:2px solid #1e293b; box-shadow:2px 2px 0 #1e293b;">Send</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Score Routing Thresholds Info -->
     <div class="card" style="margin-top:18px;" id="card-thresholds">
       <div class="card__header">
@@ -241,4 +262,64 @@ window.cxLoadClaims = async function() {
   } catch (err) {
     tbody.innerHTML = \`<tr><td colspan="\${isAdmin ? 10 : 9}" style="text-align:center; padding:20px; color:#dc2626;">Error loading claims: \${err.message}</td></tr>\`;
   }
+};
+
+window.cxSendRagChat = async function() {
+  const inputEl = document.getElementById('rag-chat-input');
+  const messagesEl = document.getElementById('rag-chat-messages');
+  if (!inputEl || !messagesEl) return;
+  
+  const query = inputEl.value.trim();
+  if (!query) return;
+  
+  // Extract order ID if present (e.g., ORD-12345)
+  const orderMatch = query.match(/ORD-\d+/i);
+  const orderId = orderMatch ? orderMatch[0].toUpperCase() : null;
+  
+  // Append user message
+  messagesEl.innerHTML += \`
+    <div style="align-self:flex-end; background:#4f46e5; color:#fff; padding:10px 14px; border-radius:12px 12px 0 12px; font-size:0.85rem; max-width:80%; box-shadow:0 2px 4px rgba(79,70,229,0.3);">
+      \${query}
+    </div>
+  \`;
+  inputEl.value = '';
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  
+  // Append loading indicator
+  const loadingId = 'loading-' + Date.now();
+  messagesEl.innerHTML += \`
+    <div id="\${loadingId}" style="align-self:flex-start; background:#fff; padding:10px 14px; border-radius:12px 12px 12px 0; border:1px solid #cbd5e1; font-size:0.85rem; max-width:80%; box-shadow:0 2px 4px rgba(0,0,0,0.05); color:#64748b;">
+      Thinking...
+    </div>
+  \`;
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+  
+  try {
+    const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/v1/rag/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ query, order_id: orderId })
+    });
+    
+    const data = await res.json();
+    const loadingEl = document.getElementById(loadingId);
+    if (loadingEl) loadingEl.remove();
+    
+    // Append AI response
+    messagesEl.innerHTML += \`
+      <div style="align-self:flex-start; background:#fff; padding:10px 14px; border-radius:12px 12px 12px 0; border:1px solid #cbd5e1; font-size:0.85rem; max-width:80%; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+        <div style="white-space:pre-wrap; line-height:1.5;">\${data.answer}</div>
+        \${data.sources && data.sources.length > 0 ? \`<div style="margin-top:6px; font-size:0.7rem; color:#10b981; font-weight:700;">Sources: \${data.sources.join(', ')}</div>\` : ''}
+      </div>
+    \`;
+  } catch (err) {
+    const loadingEl = document.getElementById(loadingId);
+    if (loadingEl) loadingEl.remove();
+    messagesEl.innerHTML += \`
+      <div style="align-self:flex-start; background:#fef2f2; color:#dc2626; padding:10px 14px; border-radius:12px 12px 12px 0; border:1px solid #fecaca; font-size:0.85rem; max-width:80%;">
+        Error connecting to RAG Agent: \${err.message}
+      </div>
+    \`;
+  }
+  messagesEl.scrollTop = messagesEl.scrollHeight;
 };

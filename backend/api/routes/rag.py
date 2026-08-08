@@ -1,5 +1,6 @@
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
 from typing import List, Optional
+from pydantic import BaseModel
 import os
 import shutil
 
@@ -66,4 +67,37 @@ async def trigger_full_reindex():
         "status": "success",
         "message": "Full re-indexing job queued.",
         "estimated_time_seconds": 30
+    }
+
+class ChatRequest(BaseModel):
+    query: str
+    order_id: Optional[str] = None
+    claim_id: Optional[str] = None
+
+@router.post("/chat")
+async def rag_chat(request: ChatRequest):
+    """
+    Answers user questions using the RAG Service.
+    """
+    from services.rag_service import rag_service
+    
+    rag_result = rag_service.query_policies(request.query)
+    
+    context = ""
+    if rag_result["policy_match"]:
+        for p in rag_result["applicable_policies"]:
+            context += f"- {p['document']} ({p['section']}): {p['content_snippet']}\n"
+    
+    order_context = f"Regarding Order {request.order_id}: " if request.order_id else ""
+    claim_context = f"For Claim {request.claim_id}, " if request.claim_id else ""
+    
+    if not context:
+        response_text = f"{claim_context}{order_context}I could not find specific policies matching your query in our knowledge base. Please contact human support."
+    else:
+        response_text = f"{claim_context}{order_context}Based on our policies:\n{context}\nIf you need further clarification, our Escalation Agent can review this manually."
+
+    return {
+        "status": "success",
+        "answer": response_text,
+        "sources": [p['document'] for p in rag_result.get("applicable_policies", [])]
     }

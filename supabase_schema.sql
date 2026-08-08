@@ -37,6 +37,17 @@ ON public.user_profiles FOR UPDATE USING (auth.uid() = id);
 ALTER TABLE public.user_history ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Users can view their own history" 
 ON public.user_history FOR SELECT USING (auth.uid() = user_id);
+
+-- ALLOW ADMINS TO VIEW ALL HISTORY
+CREATE POLICY "Admins can view all history" 
+ON public.user_history FOR SELECT USING (
+  EXISTS (
+    SELECT 1 FROM auth.users 
+    WHERE auth.users.id = auth.uid() 
+    AND (auth.users.email LIKE '%admin%' OR auth.users.email LIKE '%cxplatform.io%' OR auth.users.email = 'aruneshownsty1@gmail.com')
+  )
+);
+
 CREATE POLICY "Users can insert their own history" 
 ON public.user_history FOR INSERT WITH CHECK (auth.uid() = user_id);
 
