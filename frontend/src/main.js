@@ -116,6 +116,10 @@ if (supabase) {
   supabase.auth.getSession().then(({ data: { session } }) => {
     setSessionState(session);
     render();
+  }).catch((err) => {
+    console.error("Supabase auth error during initialization:", err);
+    setSessionState(null);
+    render();
   });
 
   supabase.auth.onAuthStateChange((_event, session) => {
