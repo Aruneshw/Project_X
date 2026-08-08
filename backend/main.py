@@ -15,7 +15,7 @@ from api.routes import agent_monitor
 from api.routes import claims
 from api.routes import policies
 from api.routes import auth
-from api.routes import rag
+from api.routes import claims, evidence, agent_monitor, auth, rag, integrations
 from services.kafka_streamer import streamer
 from prometheus_fastapi_instrumentator import Instrumentator
 
@@ -56,10 +56,13 @@ app.add_middleware(
 
 # Mount Routers
 app.include_router(auth.router, prefix="/api/v1/auth/admin", tags=["Admin Auth"])
-app.include_router(agent_monitor.router, prefix="/api/monitor", tags=["Monitoring"])
+# Feature Routers
 app.include_router(claims.router, prefix="/api/v1/claims", tags=["Claims Orchestration"])
-app.include_router(policies.router, prefix="/api/v1/policies", tags=["Policy Administration"])
+app.include_router(evidence.router, prefix="/api/v1/evidence", tags=["Evidence Validation"])
+app.include_router(agent_monitor.router, prefix="/api/monitor", tags=["Monitoring"])
+app.include_router(auth.router, prefix="/api/v1/auth", tags=["Authentication"])
 app.include_router(rag.router, prefix="/api/v1/rag", tags=["RAG Services"])
+app.include_router(integrations.router, prefix="/api/v1/integrations", tags=["Enterprise Integrations"])
 
 # Add Prometheus Metrics Exporter
 Instrumentator().instrument(app).expose(app, endpoint="/metrics")
