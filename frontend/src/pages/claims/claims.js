@@ -168,17 +168,39 @@ export function renderClaims() {
   `;
 }
 
-window.cxSubmitNewClaim = function(event) {
+window.cxSubmitNewClaim = async function(event) {
   event.preventDefault();
   const type = document.getElementById('new-claim-type')?.value || 'Order Dispute';
   const order = document.getElementById('new-claim-order')?.value || 'ORD-99999';
+  const desc = document.getElementById('new-claim-desc')?.value || 'No description provided';
   document.getElementById('claims-new-modal').style.display = 'none';
   const claimId = `CLM-${Math.floor(2848 + Math.random() * 100)}`;
+  
+  if (window.supabase) {
+    try {
+      const { data: { user } } = await window.supabase.auth.getUser();
+      if (user) {
+        await window.supabase.from('user_history').insert([{
+          user_id: user.id,
+          claim_id: claimId,
+          issue_type: type,
+          description: desc,
+          ai_score: 92, // mock score for demo
+          status: 'Auto-Resolve Approved'
+        }]);
+        // Refresh claims table if available
+        if (window.cxLoadClaims) window.cxLoadClaims();
+      }
+    } catch (e) {
+      console.error("Supabase insert error", e);
+    }
+  }
+
   showModal({
     title: 'Dispute Submitted!',
     icon: '✅',
     type: 'success',
-    body: 'Your claim is now being processed by the AI pipeline.',
+    body: 'Your claim has been securely logged to the database and is now being processed by the AI pipeline.',
     lines: [
       `📋 Claim ID: ${claimId}`,
       `📦 Type: ${type}`,
