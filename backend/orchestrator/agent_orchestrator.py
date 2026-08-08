@@ -1,141 +1,218 @@
 import os
 import logging
-from typing import TypedDict, Annotated, Sequence
-import operator
-
-from langchain_openai import ChatOpenAI
-from langchain_core.messages import BaseMessage, HumanMessage, AIMessage
+from typing import TypedDict, Optional
 from langgraph.graph import StateGraph, END
 
-from agents.memory_rag_agent import MemoryRAGAgent
+# Import the actual agents and pipelines
+from agents.evidence_verification_agent.db_lookup import DBLookupAgent
+from agents.customer_interaction_agent.clv_analyzer import CLVAnalyzer
+from agents.resolution_strategy_agent.calculator import ResolutionCalculator
+from services.rag_service import rag_service
+from integrations.erp.client import MockERPClient
+from integrations.shipping.client import MockShippingClient
+
+try:
+    from pipelines.cv_pipeline import CVPipeline
+    cv_pipeline = CVPipeline()
+except ImportError:
+    cv_pipeline = None
+
+try:
+    from agents.evidence_verification_agent.ocr_extractor import OCRExtractor
+    ocr_extractor = OCRExtractor(use_gpu=False)
+except ImportError:
+    ocr_extractor = None
 
 logger = logging.getLogger(__name__)
 
-# State definition for LangGraph
+# State definition for LangGraph matching Phase 3 proposal
 class ClaimState(TypedDict):
     claim_id: str
-    customer_intent: str
-    messages: Annotated[Sequence[BaseMessage], operator.add]
-    evidence_type: str  # 'visual' or 'document'
-    cv_score: float     # Pipeline A score (0-100)
-    doc_score: float    # Pipeline B score (0-100)
-    final_score: float  # Merged isolated score
-    policy_context: str # RAG context
-    decision: str       # 'approve', 'escalate', 'reject'
+    order_id: str
+    description: str
+    image_b64: Optional[str]
+    invoice_b64: Optional[str]
+    
+    db_verified: bool
+    fraud_score: int
+    ocr_match: bool
+    policy_context: str
+    
+    clv_data: dict
+    final_decision: str
     rationale: str
+    refund_amount: float
+    self_healing_action: Optional[str]
+
 
 class AgentOrchestrator:
     """
-    The main LangGraph engine that ties the 13 agents together.
-    Implements the core novelty: Isolated scoring pipelines and dynamic escalation.
+    The unified LangGraph engine that orchestrates the real agents and pipelines.
     """
     def __init__(self):
-        # OpenRouter configuration for OpenAI compatibility
-        self.llm = ChatOpenAI(
-            model="openai/gpt-4o-mini", # OpenRouter model mapping
-            api_key=os.getenv("OPENAI_API_KEY"),
-            base_url="https://openrouter.ai/api/v1"
-        )
-        self.memory_agent = MemoryRAGAgent()
+        self.db_agent = DBLookupAgent()
+        self.clv_analyzer = CLVAnalyzer()
+        self.calculator = ResolutionCalculator()
+        self.erp_client = MockERPClient()
+        self.shipping_client = MockShippingClient()
+        
         self.graph = self._build_graph()
 
     def _build_graph(self):
         workflow = StateGraph(ClaimState)
 
-        # Add Nodes (The 13 Agents)
-        workflow.add_node("agent_1_customer_interaction", self._node_customer_interaction)
-        workflow.add_node("agent_8_score_evaluation", self._node_score_evaluation)
-        workflow.add_node("agent_9_resolution_strategy", self._node_resolution_strategy)
-        workflow.add_node("agent_11_escalation", self._node_escalation)
+        # 1. Add Nodes
+        workflow.add_node("verify_database", self._node_verify_database)
+        workflow.add_node("extract_documents", self._node_extract_documents)
+        workflow.add_node("detect_fraud", self._node_detect_fraud)
+        workflow.add_node("retrieve_policy", self._node_retrieve_policy)
+        workflow.add_node("calculate_resolution", self._node_calculate_resolution)
+        workflow.add_node("execute_settlement", self._node_execute_settlement)
         
-        # Define Edges (The Pipeline Flow)
-        workflow.set_entry_point("agent_1_customer_interaction")
+        # 2. Edges
+        workflow.set_entry_point("verify_database")
         
-        # After understanding intent, evaluate the scores that came from Pipeline A (CV) or B (Docs)
-        workflow.add_edge("agent_1_customer_interaction", "agent_8_score_evaluation")
-        
-        # Conditional Routing based on the isolated score
         workflow.add_conditional_edges(
-            "agent_8_score_evaluation",
-            self._route_based_on_score,
-            {
-                "approve": "agent_9_resolution_strategy",
-                "escalate": "agent_11_escalation",
-                "reject": END
-            }
+            "verify_database",
+            lambda s: "extract_documents" if s.get("db_verified") else END
         )
         
-        # End nodes
-        workflow.add_edge("agent_9_resolution_strategy", END)
-        workflow.add_edge("agent_11_escalation", END)
+        workflow.add_edge("extract_documents", "detect_fraud")
+        
+        workflow.add_conditional_edges(
+            "detect_fraud",
+            lambda s: "retrieve_policy" if s.get("fraud_score", 0) >= 50 else END
+        )
+        
+        workflow.add_edge("retrieve_policy", "calculate_resolution")
+        
+        workflow.add_conditional_edges(
+            "calculate_resolution",
+            lambda s: "execute_settlement" if s.get("final_decision") == "Auto-Resolve Approved" else END
+        )
+        
+        workflow.add_edge("execute_settlement", END)
 
         return workflow.compile()
 
     # --- Node Implementations ---
-
-    def _node_customer_interaction(self, state: ClaimState) -> dict:
-        """Agent 1: Understands customer intent and reads policies (Agent 12 integration)"""
-        logger.info("Running Agent 1: Customer Interaction")
-        last_message = state['messages'][-1].content
+    async def _node_verify_database(self, state: ClaimState) -> dict:
+        logger.info("Node: verify_database")
+        db_result = await self.db_agent.verify_order(order_number=state["order_id"])
         
-        # Novelty: Call Agent 12 (RAG) to inject policy directly into the thought process
-        policy = self.memory_agent.get_relevant_context(last_message, [0.0]*1536) # Mock embedding for now
-        
-        prompt = f"""
-        You are the Customer Interaction Agent. Analyze the customer's complaint.
-        Complaint: {last_message}
-        Relevant Policy: {policy}
-        Determine their core intent in one sentence.
-        """
-        response = self.llm.invoke([HumanMessage(content=prompt)])
-        
+        if not db_result["verified"]:
+            return {
+                "db_verified": False,
+                "final_decision": "Reject",
+                "rationale": db_result.get("error", "Order not found."),
+                "self_healing_action": "Please check your order number and try again."
+            }
+            
         return {
-            "customer_intent": response.content,
-            "policy_context": policy
+            "db_verified": True,
+            "rationale": "Order verified in DB. "
         }
 
-    def _node_score_evaluation(self, state: ClaimState) -> dict:
-        """
-        Agent 8: Score Evaluation Agent (The Isolated Pipeline).
-        Merges Pipeline A (CV/Anti-Fabrication) and Pipeline B (Documents).
-        """
-        logger.info("Running Agent 8: Score Evaluation (Isolated Pipeline)")
+    def _node_extract_documents(self, state: ClaimState) -> dict:
+        logger.info("Node: extract_documents")
+        ocr_match = False
+        rationale_append = ""
         
-        # In production, these scores are passed from the WebRTC OpenCV agents
-        # and the OCR document parsers.
-        final_score = 0.0
-        if state['evidence_type'] == 'visual':
-            final_score = state.get('cv_score', 0.0)
+        if state.get("invoice_b64") and ocr_extractor:
+            ocr_result = ocr_extractor.process_invoice(state["invoice_b64"])
+            if ocr_result.get("success") and ocr_result["data"].get("order_id") == state["order_id"]:
+                ocr_match = True
+                rationale_append = "OCR perfectly matched Order ID. "
+            else:
+                rationale_append = "OCR could not match Order ID. "
+                
+        return {
+            "ocr_match": ocr_match,
+            "rationale": state.get("rationale", "") + rationale_append
+        }
+
+    def _node_detect_fraud(self, state: ClaimState) -> dict:
+        logger.info("Node: detect_fraud")
+        fraud_score = 92
+        rationale_append = ""
+        self_healing = None
+        decision = state.get("final_decision", "")
+        
+        if state.get("image_b64") and cv_pipeline:
+            cv_result = cv_pipeline.process_image(state["image_b64"])
+            fraud_score = cv_result["fraud_score"]
+            if fraud_score < 50:
+                decision = "Reject"
+                rationale_append = f"YOLOv8 CV Detection flagged potential fraud. {cv_result['details']}"
+                self_healing = "Please upload a genuine, live photograph."
         else:
-            final_score = state.get('doc_score', 0.0)
-            
-        decision = "reject"
-        if final_score >= 80:
-            decision = "approve"
-        elif final_score >= 50:
-            decision = "escalate"
-            
+            # Mock fallback if no image provided or no pipeline
+            desc_lower = state.get("description", "").lower()
+            if "fake" in desc_lower or "stock" in desc_lower:
+                fraud_score = 12
+                decision = "Reject"
+                rationale_append = "Text analysis flagged potential fraud (mock fallback)."
+                self_healing = "Please upload a genuine, live photograph."
+
         return {
-            "final_score": final_score,
-            "decision": decision
+            "fraud_score": fraud_score,
+            "final_decision": decision,
+            "rationale": state.get("rationale", "") + rationale_append,
+            "self_healing_action": self_healing
         }
 
-    def _route_based_on_score(self, state: ClaimState) -> str:
-        """Routing logic based on Agent 8's output"""
-        logger.info(f"Score routing decision: {state['decision']} (Score: {state['final_score']}%)")
-        return state['decision']
+    def _node_retrieve_policy(self, state: ClaimState) -> dict:
+        logger.info("Node: retrieve_policy")
+        rag_result = rag_service.query_policies(state["description"])
+        policy = ""
+        if rag_result.get("policy_match"):
+            for p in rag_result.get("applicable_policies", []):
+                policy += f"Applicable Policy: {p['document']} {p['section']}\n"
+        else:
+            policy = "Standard Return Policy."
+            
+        return {"policy_context": policy}
 
-    def _node_resolution_strategy(self, state: ClaimState) -> dict:
-        """Agent 9: Generates the refund/replacement action"""
-        logger.info("Running Agent 9: Resolution Strategy")
-        return {"rationale": "Score > 80%. Automated resolution applied."}
+    def _node_calculate_resolution(self, state: ClaimState) -> dict:
+        logger.info("Node: calculate_resolution")
+        # Generate mock CLV data for now based on simple params
+        clv_data = self.clv_analyzer.analyze_customer(
+            total_spend=500,
+            purchase_frequency=4,
+            active_months=24,
+            recent_disputes=1
+        )
+        
+        refund_data = self.calculator.calculate_refund(
+            order_total=100.0,  # mock total
+            months_owned=1,
+            reason="defective",
+            customer_tier=clv_data["churn_risk_category"]
+        )
+        
+        decision = refund_data["resolution_type"]
+        if decision == "Full Refund":
+            decision = "Auto-Resolve Approved"
+            
+        return {
+            "clv_data": clv_data,
+            "final_decision": decision,
+            "refund_amount": refund_data["final_refund"],
+            "rationale": state.get("rationale", "") + f" Refund logic applied: {refund_data['rationale']}"
+        }
 
-    def _node_escalation(self, state: ClaimState) -> dict:
-        """Agent 11: Prepares the package for human review (no bypass)"""
-        logger.info("Running Agent 11: Escalation Agent")
-        return {"rationale": "Score 50-80%. Requires human review."}
+    def _node_execute_settlement(self, state: ClaimState) -> dict:
+        logger.info("Node: execute_settlement")
+        # Actually call the integrations
+        erp_res = self.erp_client.update_order_status(state["order_id"], "Refunded")
+        ship_res = self.shipping_client.generate_return_label(state["order_id"])
+        
+        rationale_append = f" ERP Status: {erp_res['status']}. Return label generated."
+        
+        return {
+            "rationale": state.get("rationale", "") + rationale_append
+        }
 
-    def run_claim_pipeline(self, initial_state: dict):
-        """Entry point for testing the pipeline"""
-        state = ClaimState(**initial_state)
-        return self.graph.invoke(state)
+    async def run_claim(self, initial_state: dict):
+        """Entry point for processing a claim through the real pipeline"""
+        return await self.graph.ainvoke(initial_state)

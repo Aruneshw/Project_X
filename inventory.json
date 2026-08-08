@@ -1,0 +1,1105 @@
+{
+  "./inventory.py": {
+    "imports": [
+      "ast",
+      "os",
+      "re",
+      "json"
+    ],
+    "defined": [
+      "Function: analyze_python_file",
+      "Function: analyze_js_file"
+    ]
+  },
+  "./backend/test_langgraph.py": {
+    "imports": [
+      "os",
+      "sys",
+      "dotenv.load_dotenv",
+      "langchain_core.messages.HumanMessage",
+      "orchestrator.agent_orchestrator.AgentOrchestrator",
+      "unittest.mock.patch"
+    ],
+    "defined": [
+      "Function: run_test"
+    ]
+  },
+  "./backend/main.py": {
+    "imports": [
+      "contextlib.asynccontextmanager",
+      "fastapi.FastAPI",
+      "fastapi.middleware.cors.CORSMiddleware",
+      "backend.core.config.settings",
+      "core.logging.setup_logging",
+      "core.logging.get_logger",
+      "database.redis.connection.init_redis",
+      "database.redis.connection.close_redis",
+      "database.elasticsearch.connection.init_es",
+      "database.elasticsearch.connection.close_es",
+      "database.vector_db.connection.vector_db",
+      "api.routes.agent_monitor",
+      "api.routes.claims",
+      "api.routes.policies",
+      "api.routes.auth",
+      "api.routes.claims",
+      "api.routes.evidence",
+      "api.routes.agent_monitor",
+      "api.routes.auth",
+      "api.routes.rag",
+      "api.routes.integrations",
+      "api.routes.analytics",
+      "services.kafka_streamer.streamer",
+      "prometheus_fastapi_instrumentator.Instrumentator",
+      "uvicorn"
+    ],
+    "defined": [
+      "Function: lifespan",
+      "Function: root",
+      "Function: health_check"
+    ]
+  },
+  "./backend/test_cv.py": {
+    "imports": [
+      "cv2",
+      "numpy",
+      "agents.cv_object_detection_agent.FrameAnalyzer",
+      "json"
+    ],
+    "defined": [
+      "Function: test_cv_layers"
+    ]
+  },
+  "./backend/agents/customer_interaction_agent/multilingual.py": {
+    "imports": [
+      "typing.Dict",
+      "typing.Any"
+    ],
+    "defined": [
+      "Class: MultilingualAgent"
+    ]
+  },
+  "./backend/agents/customer_interaction_agent/clv_analyzer.py": {
+    "imports": [
+      "typing.Dict",
+      "typing.Any"
+    ],
+    "defined": [
+      "Class: CLVAnalyzer"
+    ]
+  },
+  "./backend/agents/memory_rag_agent/vector_store_manager.py": {
+    "imports": [
+      "os",
+      "qdrant_client.QdrantClient",
+      "qdrant_client.models.Distance",
+      "qdrant_client.models.VectorParams",
+      "qdrant_client.models.PointStruct",
+      "uuid",
+      "logging"
+    ],
+    "defined": [
+      "Class: VectorStoreManager"
+    ]
+  },
+  "./backend/agents/memory_rag_agent/agent.py": {
+    "imports": [
+      "logging",
+      "vector_store_manager.VectorStoreManager"
+    ],
+    "defined": [
+      "Class: MemoryRAGAgent"
+    ]
+  },
+  "./backend/agents/memory_rag_agent/__init__.py": {
+    "imports": [
+      "agent.MemoryRAGAgent",
+      "vector_store_manager.VectorStoreManager"
+    ],
+    "defined": []
+  },
+  "./backend/agents/evidence_verification_agent/voice_processor.py": {
+    "imports": [
+      "os",
+      "typing.Dict",
+      "typing.Any"
+    ],
+    "defined": [
+      "Class: VoiceProcessor"
+    ]
+  },
+  "./backend/agents/evidence_verification_agent/db_lookup.py": {
+    "imports": [
+      "sqlalchemy.ext.asyncio.AsyncSession",
+      "sqlalchemy.future.select",
+      "models.order.Order",
+      "models.customer.Customer",
+      "typing.Dict",
+      "typing.Any",
+      "typing.Optional"
+    ],
+    "defined": [
+      "Class: DBLookupAgent"
+    ]
+  },
+  "./backend/agents/evidence_verification_agent/ocr_extractor.py": {
+    "imports": [
+      "os",
+      "re",
+      "cv2",
+      "numpy",
+      "base64",
+      "typing.Dict",
+      "typing.Any",
+      "typing.Optional",
+      "easyocr"
+    ],
+    "defined": [
+      "Class: OCRExtractor"
+    ]
+  },
+  "./backend/agents/anti_fraud_challenge_agent/agent.py": {
+    "imports": [
+      "logging",
+      "challenge_generator.ChallengeGenerator",
+      "motion_tracker.MotionTracker"
+    ],
+    "defined": [
+      "Class: AntiFraudChallengeAgent"
+    ]
+  },
+  "./backend/agents/anti_fraud_challenge_agent/challenge_generator.py": {
+    "imports": [
+      "random"
+    ],
+    "defined": [
+      "Class: ChallengeGenerator"
+    ]
+  },
+  "./backend/agents/anti_fraud_challenge_agent/__init__.py": {
+    "imports": [
+      "agent.AntiFraudChallengeAgent",
+      "challenge_generator.ChallengeGenerator",
+      "motion_tracker.MotionTracker"
+    ],
+    "defined": []
+  },
+  "./backend/agents/anti_fraud_challenge_agent/motion_tracker.py": {
+    "imports": [
+      "cv2",
+      "numpy"
+    ],
+    "defined": [
+      "Class: MotionTracker"
+    ]
+  },
+  "./backend/agents/resolution_strategy_agent/calculator.py": {
+    "imports": [
+      "typing.Dict",
+      "typing.Any"
+    ],
+    "defined": [
+      "Class: ResolutionCalculator"
+    ]
+  },
+  "./backend/agents/resolution_strategy_agent/negotiation.py": {
+    "imports": [
+      "typing.Dict",
+      "typing.Any"
+    ],
+    "defined": [
+      "Class: NegotiationAgent"
+    ]
+  },
+  "./backend/agents/cv_object_detection_agent/product_classifier.py": {
+    "imports": [
+      "cv2",
+      "ultralytics.YOLO"
+    ],
+    "defined": [
+      "Class: ProductClassifier"
+    ]
+  },
+  "./backend/agents/cv_object_detection_agent/frame_analyzer.py": {
+    "imports": [
+      "cv2",
+      "logging",
+      "typing.Dict",
+      "typing.Any",
+      "hand_detector.HandDetector",
+      "product_classifier.ProductClassifier",
+      "damage_validator.DamageValidator"
+    ],
+    "defined": [
+      "Class: FrameAnalyzer"
+    ]
+  },
+  "./backend/agents/cv_object_detection_agent/hand_detector.py": {
+    "imports": [
+      "cv2",
+      "mediapipe"
+    ],
+    "defined": [
+      "Class: HandDetector"
+    ]
+  },
+  "./backend/agents/cv_object_detection_agent/damage_validator.py": {
+    "imports": [
+      "cv2",
+      "numpy"
+    ],
+    "defined": [
+      "Class: DamageValidator"
+    ]
+  },
+  "./backend/agents/cv_object_detection_agent/__init__.py": {
+    "imports": [
+      "frame_analyzer.FrameAnalyzer",
+      "hand_detector.HandDetector",
+      "product_classifier.ProductClassifier",
+      "damage_validator.DamageValidator"
+    ],
+    "defined": []
+  },
+  "./backend/models/base.py": {
+    "imports": [
+      "sqlalchemy.orm.declarative_base"
+    ],
+    "defined": []
+  },
+  "./backend/models/order.py": {
+    "imports": [
+      "sqlalchemy.Column",
+      "sqlalchemy.String",
+      "sqlalchemy.Float",
+      "sqlalchemy.DateTime",
+      "sqlalchemy.ForeignKey",
+      "sqlalchemy.func",
+      "sqlalchemy.dialects.postgresql.UUID",
+      "uuid",
+      "base.Base"
+    ],
+    "defined": [
+      "Class: Order"
+    ]
+  },
+  "./backend/models/evidence.py": {
+    "imports": [
+      "sqlalchemy.Column",
+      "sqlalchemy.String",
+      "sqlalchemy.Boolean",
+      "sqlalchemy.DateTime",
+      "sqlalchemy.ForeignKey",
+      "sqlalchemy.Float",
+      "sqlalchemy.JSON",
+      "sqlalchemy.func",
+      "sqlalchemy.dialects.postgresql.UUID",
+      "uuid",
+      "base.Base"
+    ],
+    "defined": [
+      "Class: Evidence"
+    ]
+  },
+  "./backend/models/user_history.py": {
+    "imports": [
+      "sqlalchemy.Column",
+      "sqlalchemy.String",
+      "sqlalchemy.Text",
+      "sqlalchemy.DateTime",
+      "sqlalchemy.Float",
+      "sqlalchemy.func",
+      "sqlalchemy.dialects.postgresql.UUID",
+      "uuid",
+      "base.Base"
+    ],
+    "defined": [
+      "Class: UserHistory"
+    ]
+  },
+  "./backend/models/audit.py": {
+    "imports": [
+      "sqlalchemy.Column",
+      "sqlalchemy.String",
+      "sqlalchemy.DateTime",
+      "sqlalchemy.ForeignKey",
+      "sqlalchemy.JSON",
+      "sqlalchemy.func",
+      "sqlalchemy.dialects.postgresql.UUID",
+      "uuid",
+      "base.Base"
+    ],
+    "defined": [
+      "Class: AuditLog"
+    ]
+  },
+  "./backend/models/claim.py": {
+    "imports": [
+      "sqlalchemy.Column",
+      "sqlalchemy.String",
+      "sqlalchemy.Text",
+      "sqlalchemy.DateTime",
+      "sqlalchemy.ForeignKey",
+      "sqlalchemy.Float",
+      "sqlalchemy.JSON",
+      "sqlalchemy.func",
+      "sqlalchemy.dialects.postgresql.UUID",
+      "uuid",
+      "base.Base"
+    ],
+    "defined": [
+      "Class: Claim"
+    ]
+  },
+  "./backend/models/customer.py": {
+    "imports": [
+      "sqlalchemy.Column",
+      "sqlalchemy.String",
+      "sqlalchemy.DateTime",
+      "sqlalchemy.func",
+      "sqlalchemy.dialects.postgresql.UUID",
+      "uuid",
+      "base.Base"
+    ],
+    "defined": [
+      "Class: Customer"
+    ]
+  },
+  "./backend/models/__init__.py": {
+    "imports": [
+      "base.Base",
+      "customer.Customer",
+      "order.Order",
+      "claim.Claim",
+      "evidence.Evidence",
+      "audit.AuditLog",
+      "user_history.UserHistory"
+    ],
+    "defined": []
+  },
+  "./backend/database/router.py": {
+    "imports": [
+      "typing.Dict",
+      "typing.Any",
+      "enum.Enum",
+      "postgres.connection.get_db",
+      "postgres.connection.AsyncSessionLocal",
+      "redis.connection.get_redis",
+      "elasticsearch.connection.get_es",
+      "vector_db.connection.get_vector_db"
+    ],
+    "defined": [
+      "Class: DatabaseRole",
+      "Class: DatabaseRouter"
+    ]
+  },
+  "./backend/database/redis/connection.py": {
+    "imports": [
+      "redis.asyncio",
+      "core.config.settings",
+      "core.logging.get_logger"
+    ],
+    "defined": [
+      "Function: init_redis",
+      "Function: close_redis",
+      "Function: get_redis"
+    ]
+  },
+  "./backend/database/postgres/connection.py": {
+    "imports": [
+      "sqlalchemy.ext.asyncio.create_async_engine",
+      "sqlalchemy.ext.asyncio.AsyncSession",
+      "sqlalchemy.ext.asyncio.async_sessionmaker",
+      "sqlalchemy.orm.declarative_base",
+      "core.config.settings"
+    ],
+    "defined": [
+      "Function: get_db"
+    ]
+  },
+  "./backend/database/elasticsearch/connection.py": {
+    "imports": [
+      "elasticsearch.AsyncElasticsearch",
+      "core.config.settings",
+      "core.logging.get_logger"
+    ],
+    "defined": [
+      "Function: init_es",
+      "Function: close_es",
+      "Function: get_es"
+    ]
+  },
+  "./backend/database/vector_db/connection.py": {
+    "imports": [
+      "qdrant_client.QdrantClient",
+      "core.config.settings",
+      "core.logging.get_logger"
+    ],
+    "defined": [
+      "Class: VectorDBManager",
+      "Function: get_vector_db"
+    ]
+  },
+  "./backend/api/routes/claims.py": {
+    "imports": [
+      "fastapi.APIRouter",
+      "fastapi.HTTPException",
+      "fastapi.Depends",
+      "pydantic.BaseModel",
+      "uuid",
+      "random",
+      "asyncio",
+      "sqlalchemy.ext.asyncio.AsyncSession",
+      "database.postgres.connection.get_db",
+      "services.rag_service.rag_service",
+      "services.analytics_service.analytics_service",
+      "models.user_history.UserHistory",
+      "uuid",
+      "agents.evidence_verification_agent.db_lookup.DBLookupAgent",
+      "agents.customer_interaction_agent.clv_analyzer.CLVAnalyzer",
+      "agents.resolution_strategy_agent.calculator.ResolutionCalculator",
+      "agents.resolution_strategy_agent.negotiation.NegotiationAgent",
+      "sqlalchemy.select",
+      "agents.evidence_verification_agent.ocr_extractor.OCRExtractor"
+    ],
+    "defined": [
+      "Class: ClaimRequest",
+      "Class: ClaimResponse",
+      "Function: process_claim",
+      "Function: get_claim_history"
+    ]
+  },
+  "./backend/api/routes/auth.py": {
+    "imports": [
+      "fastapi.APIRouter",
+      "fastapi.HTTPException",
+      "fastapi.Depends",
+      "pydantic.BaseModel",
+      "datetime.datetime",
+      "datetime.timedelta",
+      "jose.jwt",
+      "core.config.settings"
+    ],
+    "defined": [
+      "Class: AdminLoginRequest",
+      "Class: Token",
+      "Function: create_access_token",
+      "Function: admin_login"
+    ]
+  },
+  "./backend/api/routes/agent_monitor.py": {
+    "imports": [
+      "fastapi.APIRouter",
+      "fastapi.WebSocket",
+      "fastapi.WebSocketDisconnect",
+      "services.kafka_streamer.streamer"
+    ],
+    "defined": [
+      "Function: websocket_endpoint"
+    ]
+  },
+  "./backend/api/routes/rag.py": {
+    "imports": [
+      "fastapi.APIRouter",
+      "fastapi.UploadFile",
+      "fastapi.File",
+      "fastapi.Form",
+      "fastapi.HTTPException",
+      "typing.List",
+      "typing.Optional",
+      "pydantic.BaseModel",
+      "os",
+      "shutil",
+      "services.rag_service.rag_service"
+    ],
+    "defined": [
+      "Function: upload_policy_document",
+      "Function: list_indexed_policies",
+      "Function: trigger_full_reindex",
+      "Class: ChatRequest",
+      "Function: rag_chat"
+    ]
+  },
+  "./backend/api/routes/integrations.py": {
+    "imports": [
+      "fastapi.APIRouter",
+      "pydantic.BaseModel",
+      "integrations.crm.client.MockCRMClient",
+      "integrations.erp.client.MockERPClient",
+      "integrations.shipping.client.MockShippingClient",
+      "agents.customer_interaction_agent.multilingual.MultilingualAgent"
+    ],
+    "defined": [
+      "Class: TranslationRequest",
+      "Class: TranslationResponse",
+      "Function: translate_text",
+      "Function: get_customer",
+      "Function: get_order",
+      "Function: generate_return_label"
+    ]
+  },
+  "./backend/api/routes/policies.py": {
+    "imports": [
+      "fastapi.APIRouter",
+      "fastapi.UploadFile",
+      "fastapi.File",
+      "fastapi.Form",
+      "fastapi.HTTPException",
+      "pydantic.BaseModel",
+      "os",
+      "uuid",
+      "typing.List",
+      "services.rag_service.rag_service"
+    ],
+    "defined": [
+      "Class: PolicyQuery",
+      "Function: upload_policy",
+      "Function: get_policies",
+      "Function: query_rag",
+      "Function: reindex_policies"
+    ]
+  },
+  "./backend/api/routes/analytics.py": {
+    "imports": [
+      "fastapi.APIRouter",
+      "typing.Dict",
+      "typing.Any"
+    ],
+    "defined": [
+      "Function: get_executive_summary"
+    ]
+  },
+  "./backend/api/routes/__init__.py": {
+    "imports": [],
+    "defined": []
+  },
+  "./backend/pipelines/cv_pipeline/main.py": {
+    "imports": [
+      "cv2",
+      "numpy",
+      "base64"
+    ],
+    "defined": [
+      "Class: CVPipeline"
+    ]
+  },
+  "./backend/pipelines/document_pipeline/main.py": {
+    "imports": [
+      "re"
+    ],
+    "defined": [
+      "Class: DocumentPipeline"
+    ]
+  },
+  "./backend/core/logging.py": {
+    "imports": [
+      "__future__.annotations",
+      "logging",
+      "sys",
+      "datetime.datetime",
+      "datetime.timezone",
+      "backend.core.config.settings",
+      "json"
+    ],
+    "defined": [
+      "Class: JSONFormatter",
+      "Function: setup_logging",
+      "Function: get_logger"
+    ]
+  },
+  "./backend/core/config.py": {
+    "imports": [
+      "__future__.annotations",
+      "os",
+      "enum.Enum",
+      "typing.Optional",
+      "pydantic.Field",
+      "pydantic_settings.BaseSettings"
+    ],
+    "defined": [
+      "Class: Environment",
+      "Class: Settings"
+    ]
+  },
+  "./backend/core/exceptions.py": {
+    "imports": [
+      "__future__.annotations"
+    ],
+    "defined": [
+      "Class: CXPlatformError",
+      "Class: InvalidEvidenceError",
+      "Class: GalleryBlockedError",
+      "Class: FraudRejectedError",
+      "Class: ChallengeFailedError",
+      "Class: ReplayAttackDetectedError",
+      "Class: RequiresHumanReviewError",
+      "Class: HumanReviewBypassAttemptError",
+      "Class: PolicyConflictError",
+      "Class: AgentExecutionError",
+      "Class: OrchestratorError",
+      "Class: AuthenticationError",
+      "Class: AuthorizationError",
+      "Class: ResourceNotFoundError",
+      "Class: RateLimitExceededError"
+    ]
+  },
+  "./backend/core/__init__.py": {
+    "imports": [],
+    "defined": []
+  },
+  "./backend/utils/image_processing.py": {
+    "imports": [
+      "base64"
+    ],
+    "defined": [
+      "Function: decode_image_b64",
+      "Function: validate_image_size"
+    ]
+  },
+  "./backend/utils/logger.py": {
+    "imports": [
+      "logging",
+      "sys"
+    ],
+    "defined": [
+      "Function: get_logger"
+    ]
+  },
+  "./backend/integrations/crm/client.py": {
+    "imports": [
+      "uuid",
+      "typing.Dict",
+      "typing.Any"
+    ],
+    "defined": [
+      "Class: MockCRMClient"
+    ]
+  },
+  "./backend/integrations/shipping/client.py": {
+    "imports": [
+      "uuid",
+      "random",
+      "typing.Dict",
+      "typing.Any"
+    ],
+    "defined": [
+      "Class: MockShippingClient"
+    ]
+  },
+  "./backend/integrations/erp/client.py": {
+    "imports": [
+      "uuid",
+      "typing.Dict",
+      "typing.Any"
+    ],
+    "defined": [
+      "Class: MockERPClient"
+    ]
+  },
+  "./backend/orchestrator/agent_orchestrator.py": {
+    "imports": [
+      "os",
+      "logging",
+      "typing.TypedDict",
+      "typing.Annotated",
+      "typing.Sequence",
+      "operator",
+      "langchain_openai.ChatOpenAI",
+      "langchain_core.messages.BaseMessage",
+      "langchain_core.messages.HumanMessage",
+      "langchain_core.messages.AIMessage",
+      "langgraph.graph.StateGraph",
+      "langgraph.graph.END",
+      "agents.memory_rag_agent.MemoryRAGAgent"
+    ],
+    "defined": [
+      "Class: ClaimState",
+      "Class: AgentOrchestrator"
+    ]
+  },
+  "./backend/orchestrator/__init__.py": {
+    "imports": [
+      "agent_orchestrator.AgentOrchestrator"
+    ],
+    "defined": []
+  },
+  "./backend/tests/test_rag.py": {
+    "imports": [
+      "pytest",
+      "fastapi.testclient.TestClient",
+      "main.app"
+    ],
+    "defined": [
+      "Function: test_rag_chat_endpoint",
+      "Function: test_rag_reindex"
+    ]
+  },
+  "./backend/tests/test_claims.py": {
+    "imports": [
+      "pytest",
+      "asyncio",
+      "fastapi.testclient.TestClient",
+      "main.app"
+    ],
+    "defined": [
+      "Function: test_health_check",
+      "Function: test_claims_process_auto_resolve",
+      "Function: test_claims_process_fraud"
+    ]
+  },
+  "./backend/tests/conftest.py": {
+    "imports": [
+      "pytest",
+      "os",
+      "sys"
+    ],
+    "defined": [
+      "Function: setup_test_environment"
+    ]
+  },
+  "./backend/scripts/seed_dbs.py": {
+    "imports": [
+      "redis",
+      "qdrant_client.QdrantClient",
+      "qdrant_client.models.PointStruct",
+      "qdrant_client.models.VectorParams",
+      "qdrant_client.models.Distance",
+      "sys",
+      "uuid"
+    ],
+    "defined": [
+      "Function: check_redis",
+      "Function: check_qdrant"
+    ]
+  },
+  "./backend/scripts/seed_db.py": {
+    "imports": [
+      "asyncio",
+      "uuid",
+      "datetime.datetime",
+      "datetime.timezone",
+      "database.postgres.connection.engine",
+      "database.postgres.connection.Base",
+      "models.order.Order",
+      "models.customer.Customer",
+      "sqlalchemy.ext.asyncio.AsyncSession"
+    ],
+    "defined": [
+      "Function: seed_database"
+    ]
+  },
+  "./backend/scripts/generate_cv_dataset.py": {
+    "imports": [
+      "os",
+      "cv2",
+      "numpy",
+      "random",
+      "pathlib.Path"
+    ],
+    "defined": [
+      "Function: create_synthetic_dataset"
+    ]
+  },
+  "./backend/services/rag_service.py": {
+    "imports": [
+      "os",
+      "json",
+      "typing.List",
+      "typing.Dict",
+      "typing.Any",
+      "langchain_community.document_loaders.PyMuPDFLoader",
+      "langchain_text_splitters.RecursiveCharacterTextSplitter",
+      "langchain_huggingface.HuggingFaceEmbeddings",
+      "langchain_community.vectorstores.FAISS",
+      "langchain_core.documents.Document"
+    ],
+    "defined": [
+      "Class: RAGService"
+    ]
+  },
+  "./backend/services/analytics_service.py": {
+    "imports": [
+      "datetime.datetime",
+      "database.router.router"
+    ],
+    "defined": [
+      "Class: AnalyticsService"
+    ]
+  },
+  "./backend/services/kafka_streamer.py": {
+    "imports": [
+      "asyncio",
+      "json",
+      "logging",
+      "aiokafka.AIOKafkaConsumer",
+      "fastapi.WebSocket"
+    ],
+    "defined": [
+      "Class: KafkaWebsocketStreamer"
+    ]
+  },
+  "./frontend/vite.config.js": {
+    "imports": [
+      "vite",
+      "vite-plugin-pwa"
+    ],
+    "defined": [],
+    "fetches": []
+  },
+  "./frontend/src/main.js": {
+    "imports": [
+      "./components/sidebar.js",
+      "./utils/supabase.js"
+    ],
+    "defined": [
+      "Function: setSessionState",
+      "Function: render",
+      "Function: navigate",
+      "Function: handleSignOut"
+    ],
+    "fetches": []
+  },
+  "./frontend/src/counter.js": {
+    "imports": [],
+    "defined": [
+      "Function: setupCounter",
+      "Function: setCounter"
+    ],
+    "fetches": []
+  },
+  "./frontend/src/pages/dashboard.js": {
+    "imports": [
+      "./customer/userDashboard.js",
+      "./admin/adminDashboard.js",
+      "./auth/login.js"
+    ],
+    "defined": [
+      "Function: renderDashboard"
+    ],
+    "fetches": []
+  },
+  "./frontend/src/pages/index.js": {
+    "imports": [],
+    "defined": [],
+    "fetches": []
+  },
+  "./frontend/src/pages/home.js": {
+    "imports": [
+      "./auth/login.js",
+      "./customer/home/index.js",
+      "./admin/adminDashboard.js"
+    ],
+    "defined": [
+      "Function: renderHome",
+      "Function: renderRightPanel"
+    ],
+    "fetches": []
+  },
+  "./frontend/src/pages/customer/userDashboard.js": {
+    "imports": [
+      "../../utils/data.js",
+      "../../utils/modal.js"
+    ],
+    "defined": [
+      "Function: cxSelectIssueType",
+      "Function: cxSubmitClaim",
+      "Function: renderUserDashboard"
+    ],
+    "fetches": []
+  },
+  "./frontend/src/pages/customer/cases/index.js": {
+    "imports": [
+      "../../../utils/data.js"
+    ],
+    "defined": [
+      "Function: renderCustomerCases"
+    ],
+    "fetches": []
+  },
+  "./frontend/src/pages/customer/profile/index.js": {
+    "imports": [
+      "../../../utils/modal.js"
+    ],
+    "defined": [
+      "Function: cxSaveProfile",
+      "Function: renderCustomerProfile"
+    ],
+    "fetches": []
+  },
+  "./frontend/src/pages/customer/review/index.js": {
+    "imports": [
+      "../../../utils/modal.js"
+    ],
+    "defined": [
+      "Function: cxSetStars",
+      "Function: cxSubmitReview",
+      "Function: renderCustomerReview"
+    ],
+    "fetches": []
+  },
+  "./frontend/src/pages/customer/home/index.js": {
+    "imports": [
+      "../../../utils/data.js",
+      "../../../utils/modal.js"
+    ],
+    "defined": [
+      "Function: updateStep",
+      "Function: cxRunCVChallenge",
+      "Function: cxExecute5StepPipeline",
+      "Function: cxCloseCameraOverlay",
+      "Function: renderCustomerHome",
+      "Function: cxOpenIntakeModal",
+      "Function: cxCapturePhoto",
+      "Function: cxToggleJsonView",
+      "Function: runOCR",
+      "Function: cxHomeSelectIssue",
+      "Function: processFile",
+      "Function: cxOpenCameraOverlay"
+    ],
+    "fetches": []
+  },
+  "./frontend/src/pages/auth/login.js": {
+    "imports": [
+      "../customer/userDashboard.js",
+      "../admin/adminDashboard.js",
+      "../../utils/supabase.js"
+    ],
+    "defined": [
+      "Function: cxHandleAdminLogin",
+      "Function: renderLogin",
+      "Function: cxHandleGoogleLogin"
+    ],
+    "fetches": []
+  },
+  "./frontend/src/pages/admin/agents.js": {
+    "imports": [
+      "../../utils/data.js",
+      "../../utils/icons.js"
+    ],
+    "defined": [
+      "Function: renderAgents"
+    ],
+    "fetches": []
+  },
+  "./frontend/src/pages/admin/adminDashboard.js": {
+    "imports": [
+      "../../utils/data.js",
+      "../../utils/modal.js"
+    ],
+    "defined": [
+      "Function: cxAdminReject",
+      "Function: cxAdminViewCase",
+      "Function: cxSimulateLiveLog",
+      "Function: cxFilterLogLevel",
+      "Function: cxFilterLogs",
+      "Function: renderAdminDashboard",
+      "Function: cxLogout",
+      "Function: cxLoadPolicies",
+      "Function: cxReindexPolicies",
+      "Function: cxUploadPolicy",
+      "Function: cxLoadDbHistory",
+      "Function: cxTogglePolicyUpload",
+      "Function: cxAdminApprove"
+    ],
+    "fetches": []
+  },
+  "./frontend/src/pages/admin/analytics.js": {
+    "imports": [
+      "../../utils/icons.js",
+      "../../utils/data.js"
+    ],
+    "defined": [
+      "Function: renderAnalytics"
+    ],
+    "fetches": []
+  },
+  "./frontend/src/pages/claims/evidence.js": {
+    "imports": [
+      "../../utils/icons.js",
+      "../../utils/modal.js"
+    ],
+    "defined": [
+      "Function: cxOpenCamera",
+      "Function: renderEvidence",
+      "Function: cxUploadDocument",
+      "Function: cxTriggerChallenge"
+    ],
+    "fetches": []
+  },
+  "./frontend/src/pages/claims/claims.js": {
+    "imports": [
+      "../../utils/data.js",
+      "../../utils/modal.js"
+    ],
+    "defined": [
+      "Function: cxSubmitNewClaim",
+      "Function: renderClaims",
+      "Function: cxSendRagChat",
+      "Function: cxLoadClaims"
+    ],
+    "fetches": []
+  },
+  "./frontend/src/components/topbar.js": {
+    "imports": [
+      "../utils/icons.js"
+    ],
+    "defined": [
+      "Function: renderTopbar"
+    ],
+    "fetches": []
+  },
+  "./frontend/src/components/sidebar.js": {
+    "imports": [],
+    "defined": [
+      "Function: renderSidebar"
+    ],
+    "fetches": []
+  },
+  "./frontend/src/utils/data.js": {
+    "imports": [],
+    "defined": [],
+    "fetches": []
+  },
+  "./frontend/src/utils/modal.js": {
+    "imports": [],
+    "defined": [
+      "Function: injectModalStyles",
+      "Function: escHandler",
+      "Function: close",
+      "Function: showModal"
+    ],
+    "fetches": []
+  },
+  "./frontend/src/utils/icons.js": {
+    "imports": [],
+    "defined": [],
+    "fetches": []
+  },
+  "./frontend/src/utils/supabase.js": {
+    "imports": [
+      "@supabase/supabase-js"
+    ],
+    "defined": [
+      "Function: supabase"
+    ],
+    "fetches": []
+  },
+  "./frontend/cmnpt/reference-components/ReferenceCards.js": {
+    "imports": [],
+    "defined": [
+      "Function: renderReferenceUI",
+      "Function: NearbyMentorsCard",
+      "Function: ScheduleCallCard",
+      "Function: MyChatsCard",
+      "Function: AskADoubtCard"
+    ],
+    "fetches": []
+  },
+  "./frontend/cmnpt/reference-components/ListContainer.js": {
+    "imports": [],
+    "defined": [
+      "Function: ListContainer",
+      "Function: ListRowItem"
+    ],
+    "fetches": []
+  }
+}

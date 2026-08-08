@@ -6,21 +6,15 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+from database.router import router
+
 class VectorStoreManager:
     """
-    Manages the connection to Qdrant Cloud.
+    Manages the connection to Qdrant Cloud via the central DatabaseRouter.
     Stores enterprise policies, SLAs, and previous resolved claims as vector embeddings.
     """
     def __init__(self):
-        # Using the Qdrant keys provided in .env
-        self.qdrant_url = os.getenv("QDRANT_URL")
-        self.qdrant_api_key = os.getenv("QDRANT_API_KEY")
-        
-        self.client = QdrantClient(
-            url=self.qdrant_url, 
-            api_key=self.qdrant_api_key
-        )
-        
+        self.client = router.get_rag_db()
         self.policy_collection = "enterprise_policies"
         self._ensure_collection_exists(self.policy_collection)
 

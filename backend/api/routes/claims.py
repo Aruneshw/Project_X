@@ -11,17 +11,22 @@ from services.analytics_service import analytics_service
 from models.user_history import UserHistory
 import uuid
 
-# New Enterprise Agents
-from agents.evidence_verification_agent.db_lookup import DBLookupAgent
-from agents.customer_interaction_agent.clv_analyzer import CLVAnalyzer
 from agents.resolution_strategy_agent.calculator import ResolutionCalculator
 from agents.resolution_strategy_agent.negotiation import NegotiationAgent
+from orchestrator.agent_orchestrator import AgentOrchestrator
 
 try:
     from agents.evidence_verification_agent.ocr_extractor import OCRExtractor
     ocr_extractor = OCRExtractor(use_gpu=False)
 except ImportError:
     ocr_extractor = None
+
+try:
+    from pipelines.cv_pipeline import CVPipeline
+    cv_pipeline = CVPipeline()
+except ImportError as e:
+    print(f"Failed to load CVPipeline: {e}")
+    cv_pipeline = None
 
 router = APIRouter()
 
@@ -44,110 +49,68 @@ class ClaimResponse(BaseModel):
     self_healing_action: str = None
     negotiation_offer: str = None
 
-# Instantiate stateless agents
-db_lookup_agent = DBLookupAgent()
-clv_analyzer = CLVAnalyzer()
-resolution_calculator = ResolutionCalculator()
+# Instantiate stateless agents and orchestrator
 negotiation_agent = NegotiationAgent()
+orchestrator = AgentOrchestrator()
 
 @router.post("/process", response_model=ClaimResponse)
 async def process_claim(request: ClaimRequest, session: AsyncSession = Depends(get_db)):
     claim_id = f"CLM-{random.randint(3000, 9999)}"
     desc_lower = request.description.lower()
     
-    # 1. DB Verification (Real DB Lookup)
-    db_result = await db_lookup_agent.verify_order(session, request.order)
-    if not db_result["verified"]:
-        return ClaimResponse(
-            claim_id=claim_id,
-            status="Failed",
-            ai_score=0,
-            decision="Reject",
-            rationale=db_result["error"],
-            policy_applied="Standard Operating Procedure v1",
-            self_healing_action="Please check your order number and try again."
-        )
-        
-    order_data = db_result["order_details"]
+    # Execute the unified LangGraph orchestrator
+    initial_state = {
+        "claim_id": claim_id,
+        "order_id": request.order,
+        "description": request.description,
+        "image_b64": request.image_b64,
+        "invoice_b64": request.invoice_b64,
+        "db_verified": False,
+        "fraud_score": 0,
+        "ocr_match": False,
+        "policy_context": "",
+        "clv_data": {},
+        "final_decision": "Pending",
+        "rationale": "",
+        "refund_amount": 0.0,
+        "self_healing_action": None
+    }
     
-    # 2. RAG Policy Retrieval
-    rag_result = rag_service.query_policies(request.description)
-    policy = ""
-    if rag_result["policy_match"]:
-        for p in rag_result["applicable_policies"]:
-            policy += f"Applicable Policy: {p['document']} {p['section']}\n"
-    else:
-        policy = "Standard Return Policy."
-        
-    # 3. OCR Invoice Verification
-    ocr_rationale = ""
-    if request.invoice_b64 and ocr_extractor:
-        ocr_result = ocr_extractor.process_invoice(request.invoice_b64)
-        if ocr_result["success"] and ocr_result["data"]["order_id"] == request.order:
-            ocr_rationale = " OCR extraction perfectly matched the Order ID on the invoice document. "
-        else:
-            ocr_rationale = " OCR could not match the Order ID on the document. "
-            
-    # 4. CLV Analysis & Churn Prediction
-    clv_data = clv_analyzer.analyze_customer(
-        total_spend=order_data["total_amount"] * 3, # Mock historical
-        purchase_frequency=4, 
-        active_months=24, 
-        recent_disputes=1
-    )
+    final_state = await orchestrator.run_claim(initial_state)
     
-    # 5. Refund Calculation
-    refund_data = resolution_calculator.calculate_refund(
-        order_total=order_data["total_amount"],
-        months_owned=1,
-        reason=request.type.lower(),
-        customer_tier=clv_data["churn_risk_category"]
-    )
-    
-    # 6. Negotiation Agent (Emotion Aware)
+    # Negotiation Agent (Emotion Aware)
     # Detect basic sentiment from description
     sentiment = "frustrated" if "angry" in desc_lower or "frustrat" in desc_lower or "unacceptable" in desc_lower else "neutral"
-    negotiation_offer = negotiation_agent.generate_offer(
-        clv_data=clv_data,
-        sentiment=sentiment,
-        base_refund=refund_data["final_refund"]
-    )
     
-    # 7. Computer Vision Mock & Fraud Detection
-    is_fake = "fake" in desc_lower or "stock" in desc_lower
-    ai_score = 92
-    decision = refund_data["resolution_type"]
-    rationale = f"Order verified in DB. {ocr_rationale} Refund logic applied: {refund_data['rationale']}"
-    self_healing = None
-    
-    if is_fake:
-        ai_score = 12
-        decision = "Reject"
-        rationale = "CNN Object Detection flagged the uploaded image as digitally fabricated."
-        policy = "Anti-Fraud Policy v4.0: Fabricated evidence results in immediate claim denial."
-        self_healing = "Please upload a genuine, live photograph."
+    # We only negotiate if a refund was offered
+    negotiation_offer = None
+    if final_state.get("refund_amount", 0.0) > 0:
+        negotiation_offer = negotiation_agent.generate_offer(
+            clv_data=final_state.get("clv_data", {}),
+            sentiment=sentiment,
+            base_refund=final_state.get("refund_amount", 0.0)
+        )
     
     # Push unified data to Analytics
     asyncio.create_task(
         analytics_service.log_claim_analysis(
             claim_id=claim_id,
             user_id="customer_123",
-            ai_score=ai_score,
-            decision=decision,
-            policy_applied=policy
+            ai_score=final_state.get("fraud_score", 0),
+            decision=final_state.get("final_decision", ""),
+            policy_applied=final_state.get("policy_context", "Standard Policy")
         )
     )
     
     # Store history in Supabase table
-    # We will use a mock user UUID since there's no real auth yet
     user_uuid = uuid.uuid4()
     new_history = UserHistory(
         user_id=user_uuid,
         claim_id=claim_id,
         issue_type=request.type,
         description=request.description,
-        ai_score=ai_score,
-        status=decision
+        ai_score=final_state.get("fraud_score", 0),
+        status=final_state.get("final_decision", "")
     )
     session.add(new_history)
     try:
@@ -159,11 +122,11 @@ async def process_claim(request: ClaimRequest, session: AsyncSession = Depends(g
     return ClaimResponse(
         claim_id=claim_id,
         status="Success",
-        ai_score=ai_score,
-        decision=decision,
-        rationale=rationale,
-        policy_applied=policy,
-        self_healing_action=self_healing,
+        ai_score=final_state.get("fraud_score", 0),
+        decision=final_state.get("final_decision", ""),
+        rationale=final_state.get("rationale", ""),
+        policy_applied=final_state.get("policy_context", ""),
+        self_healing_action=final_state.get("self_healing_action"),
         negotiation_offer=negotiation_offer
     )
 
