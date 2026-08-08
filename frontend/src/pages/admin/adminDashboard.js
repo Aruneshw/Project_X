@@ -320,6 +320,40 @@ export function renderAdminDashboard() {
         </div>
       </div>
 
+      <!-- NEW: DATABASE USER HISTORY TABLE -->
+      <div class="card" style="margin-bottom:24px;" id="admin-db-history">
+        <div class="card__header" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span class="card__title">🗄️ Database Records (user_history)</span>
+            <p style="font-size:0.78rem; color:var(--cx-text-muted); margin-top:2px;">
+              Live data from Supabase PostgreSQL database.
+            </p>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="cxLoadDbHistory()" id="btn-refresh-db">
+            🔄 Refresh DB
+          </button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="claim-table" id="db-history-table">
+            <thead>
+              <tr>
+                <th>Claim ID</th>
+                <th>User ID</th>
+                <th>Issue Type</th>
+                <th>AI Score</th>
+                <th>Status</th>
+                <th>Description</th>
+              </tr>
+            </thead>
+            <tbody id="db-history-tbody">
+              <tr>
+                <td colspan="6" style="text-align:center; color:#64748b;">Loading database records...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- Content Grid: Live Activity + Fraud Queue -->
       <div class="content-grid" style="margin-bottom:24px;">
         <div class="card" id="admin-activity">
@@ -658,4 +692,32 @@ setTimeout(() => {
   if (document.getElementById('policy-list-container')) {
     window.cxLoadPolicies();
   }
+  if (document.getElementById('db-history-tbody')) {
+    window.cxLoadDbHistory();
+  }
 }, 500);
+
+window.cxLoadDbHistory = async function() {
+  const tbody = document.getElementById('db-history-tbody');
+  if (!tbody) return;
+  try {
+    const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/v1/claims/history');
+    const data = await res.json();
+    if (data.history && data.history.length > 0) {
+      tbody.innerHTML = data.history.map(h => `
+        <tr>
+          <td style="font-family:monospace; font-weight:700; color:#4f46e5;">${h.claim_id}</td>
+          <td style="font-family:monospace; font-size:0.75rem; color:#64748b;">${h.user_id}</td>
+          <td style="color:var(--cx-text-secondary);">${h.issue_type}</td>
+          <td style="font-weight:700;">${h.ai_score !== null ? h.ai_score : 'N/A'}</td>
+          <td><span class="badge-status ${h.status === 'Reject' ? 'rejected' : 'resolved'}">${h.status}</span></td>
+          <td style="font-size:0.8rem; color:#475569; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${h.description}">${h.description}</td>
+        </tr>
+      `).join('');
+    } else {
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#64748b;">No records found in database.</td></tr>';
+    }
+  } catch (err) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#dc2626;">Error loading database records.</td></tr>';
+  }
+};

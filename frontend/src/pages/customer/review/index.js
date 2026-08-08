@@ -64,7 +64,7 @@ export function renderCustomerReview() {
             <div class="lc-content">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h4 class="lc-title" style="margin:0;">Praveen — Case #CLM-2846</h4>
-                <span style="color:#f59e0b; font-weight:800;">⭐⭐⭐⭐⭐ 5.0</span>
+                <span style="color:#f59e0b; font-weight:800;">⭐⭐⭐⭐½ 4.5</span>
               </div>
               <p style="font-size:0.82rem; color:#475569; margin:4px 0 0 0;">"Camera capture gate was very smooth. Received full refund in under 2 minutes!"</p>
             </div>
@@ -75,7 +75,7 @@ export function renderCustomerReview() {
             <div class="lc-content">
               <div style="display:flex; justify-content:space-between; align-items:center;">
                 <h4 class="lc-title" style="margin:0;">Sarah M. — Case #CLM-2847</h4>
-                <span style="color:#f59e0b; font-weight:800;">⭐⭐⭐⭐⭐ 5.0</span>
+                <span style="color:#f59e0b; font-weight:800;">⭐⭐⭐⭐ 4.0</span>
               </div>
               <p style="font-size:0.82rem; color:#475569; margin:4px 0 0 0;">"The LED pen physical challenge was unique and quick to complete. Great security!"</p>
             </div>

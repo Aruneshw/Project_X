@@ -369,35 +369,66 @@ window.cxOpenCameraOverlay = function() {
     });
 };
 
-window.cxRunCVChallenge = function() {
+window.cxRunCVChallenge = async function() {
   const btn = document.getElementById('btn-camera-action');
   const text = document.getElementById('cv-challenge-text');
   const progress = document.getElementById('cv-progress-bar');
   const fill = document.getElementById('cv-progress-fill');
+  const video = document.getElementById('camera-video');
   
-  if (!btn || !text) return;
+  if (!btn || !text || !video) return;
   btn.disabled = true;
   progress.style.display = 'block';
   fill.style.width = '10%';
+  text.innerHTML = 'Layer 1: <span style="color:#2563eb;">Initializing QR Deep Scan...</span>';
+
+  // Load jsQR dynamically
+  if (!window.jsQR) {
+    const script = document.createElement('script');
+    script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
+    document.head.appendChild(script);
+    await new Promise(r => script.onload = r);
+  }
+
+  fill.style.width = '40%';
+  text.innerHTML = 'Layer 2: <span style="color:#d97706;">Scanning for verification QR...</span>';
+
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
   
-  text.innerHTML = 'Layer 1: <span style="color:#2563eb;">Please place one finger on the product.</span>';
-  
-  setTimeout(() => {
-    fill.style.width = '40%';
-    text.innerHTML = 'Layer 2: <span style="color:#d97706;">Now slowly rotate the product 360 degrees.</span>';
-    
-    setTimeout(() => {
-      fill.style.width = '70%';
-      text.innerHTML = 'Layer 3: <span style="color:#059669;">Detecting surface geometry and depth...</span>';
-      
-      setTimeout(() => {
-        fill.style.width = '100%';
-        text.innerHTML = '<span style="color:#059669;">✓ Multiple Intelligence Layers Verified. Capturing...</span>';
-        cxCapturePhoto();
-      }, 2500);
-      
-    }, 3500);
-  }, 3500);
+  const DEMO_QR_DATABASE = ['DEMO_QR_123', 'REFUND_555', 'DISPUTE_999'];
+  let scanning = true;
+
+  const scanFrame = () => {
+    if (!scanning) return;
+    if (video.readyState === video.HAVE_ENOUGH_DATA) {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = window.jsQR(imageData.data, imageData.width, imageData.height, {
+        inversionAttempts: "dontInvert",
+      });
+
+      if (code) {
+        if (DEMO_QR_DATABASE.includes(code.data)) {
+           fill.style.width = '100%';
+           text.innerHTML = `<span style="color:#059669;">✓ Verified Authentic QR: ${code.data}. Capturing...</span>`;
+           scanning = false;
+           setTimeout(() => cxCapturePhoto(), 1000);
+        } else {
+           text.innerHTML = `<span style="color:#dc2626;">❌ Unrecognized QR: ${code.data}. Continuing scan...</span>`;
+           requestAnimationFrame(scanFrame);
+        }
+      } else {
+        requestAnimationFrame(scanFrame);
+      }
+    } else {
+      requestAnimationFrame(scanFrame);
+    }
+  };
+
+  scanFrame();
 };
 
 window.cxCapturePhoto = function() {
@@ -411,35 +442,18 @@ window.cxCapturePhoto = function() {
   ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
   document.getElementById('captured-photo-data').value = canvas.toDataURL('image/jpeg');
   
-  if (btn) btn.textContent = 'Recording 3s video...';
+  if (btn) btn.textContent = 'Processing Data...';
   
-  let chunks = [];
-  try {
-    const recorder = new MediaRecorder(window.cameraStream);
-    recorder.ondataavailable = e => chunks.push(e.data);
-    recorder.onstop = () => {
-      const blob = new Blob(chunks, { type: 'video/webm' });
-      const reader = new FileReader();
-      reader.onloadend = function() {
-        document.getElementById('captured-video-data').value = reader.result;
-        
-        const note = document.getElementById('camera-status-note');
-        if (note) note.style.display = 'block';
-        cxCloseCameraOverlay();
-        if (btn) {
-          btn.textContent = 'Start Liveness Challenge';
-          btn.disabled = false;
-        }
-      }
-      reader.readAsDataURL(blob);
-    };
-    recorder.start();
-    setTimeout(() => recorder.stop(), 3000);
-  } catch (err) {
-    // Fallback if MediaRecorder fails
-    cxCloseCameraOverlay();
-    const note = document.getElementById('camera-status-note');
-    if (note) note.style.display = 'block';
+  // Directly close overlay after capture, skipping the 3s mock video record 
+  // since we now do real QR deep scan
+  document.getElementById('captured-video-data').value = 'qr_verified_deep_scan';
+  
+  const note = document.getElementById('camera-status-note');
+  if (note) note.style.display = 'block';
+  cxCloseCameraOverlay();
+  if (btn) {
+    btn.textContent = 'Start Liveness Challenge';
+    btn.disabled = false;
   }
 };
 
