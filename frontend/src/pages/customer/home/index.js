@@ -358,6 +358,18 @@ window.cxOpenCameraOverlay = function() {
   const overlay = document.getElementById('camera-overlay');
   if (!overlay) return;
   overlay.style.display = 'flex';
+  
+  // Reset UI state in case of previous runs
+  const text = document.getElementById('cv-challenge-text');
+  const progress = document.getElementById('cv-progress-bar');
+  const btn = document.getElementById('btn-camera-action');
+  if (text) text.innerHTML = 'Authenticating object... Please prepare to scan.';
+  if (progress) progress.style.display = 'none';
+  if (btn) {
+    btn.textContent = 'Start Liveness Challenge';
+    btn.disabled = false;
+  }
+
   const video = document.getElementById('camera-video');
   navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false })
     .then(stream => {

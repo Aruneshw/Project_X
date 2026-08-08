@@ -219,7 +219,7 @@ window.cxLoadClaims = async function() {
   const isAdmin = window.cxCurrentRole === 'admin';
   
   if (!window.supabase) {
-    tbody.innerHTML = \`<tr><td colspan="\${isAdmin ? 10 : 9}" style="text-align:center; padding:20px; color:#dc2626;">Supabase client not initialized.</td></tr>\`;
+    tbody.innerHTML = `<tr><td colspan="${isAdmin ? 10 : 9}" style="text-align:center; padding:20px; color:#dc2626;">Supabase client not initialized.</td></tr>`;
     return;
   }
 
@@ -241,48 +241,48 @@ window.cxLoadClaims = async function() {
     if (claims && claims.length > 0) {
       tbody.innerHTML = claims.map(c => {
         const score = c.ai_score || 0;
-        return \`
+        return `
         <tr>
-          <td style="font-family:var(--cx-font-mono);font-weight:700;font-size:0.82rem;color:#4f46e5;">\${c.claim_id}</td>
-          <td style="font-weight:500;">\${c.user_id ? c.user_id.substring(0,8)+'...' : 'Unknown'}</td>
-          <td style="color:var(--cx-text-secondary);">\${c.issue_type}</td>
-          <td style="font-family:var(--cx-font-mono);font-size:0.78rem;color:var(--cx-text-muted);">\${c.description ? c.description.substring(0, 15)+'...' : 'N/A'}</td>
+          <td style="font-family:var(--cx-font-mono);font-weight:700;font-size:0.82rem;color:#4f46e5;">${c.claim_id}</td>
+          <td style="font-weight:500;">${c.user_id ? c.user_id.substring(0,8)+'...' : 'Unknown'}</td>
+          <td style="color:var(--cx-text-secondary);">${c.issue_type}</td>
+          <td style="font-family:var(--cx-font-mono);font-size:0.78rem;color:var(--cx-text-muted);">${c.description ? c.description.substring(0, 15)+'...' : 'N/A'}</td>
           <td>
             <div class="score-bar">
               <div class="score-bar__track">
-                <div class="score-bar__fill \${score >= 80 ? 'high' : score >= 50 ? 'mid' : 'low'}"
-                     style="width:\${score}%"></div>
+                <div class="score-bar__fill ${score >= 80 ? 'high' : score >= 50 ? 'mid' : 'low'}"
+                     style="width:${score}%"></div>
               </div>
-              <span class="score-bar__value">\${score}%</span>
+              <span class="score-bar__value">${score}%</span>
             </div>
           </td>
           <td>
             <span style="font-size:0.72rem;font-weight:700;padding:2px 8px;border-radius:10px;
-              background:\${score >= 80 ? '#dcfce7' : score >= 50 ? '#fef3c7' : '#fee2e2'};
-              color:\${score >= 80 ? '#15803d' : score >= 50 ? '#b45309' : '#dc2626'};">
-              \${score >= 80 ? '⚡ Auto-Resolve' : score >= 50 ? '⚖️ Human Review' : '🚫 Fraud Reject'}
+              background:${score >= 80 ? '#dcfce7' : score >= 50 ? '#fef3c7' : '#fee2e2'};
+              color:${score >= 80 ? '#15803d' : score >= 50 ? '#b45309' : '#dc2626'};">
+              ${score >= 80 ? '⚡ Auto-Resolve' : score >= 50 ? '⚖️ Human Review' : '🚫 Fraud Reject'}
             </span>
           </td>
-          <td><span class="badge-status \${c.status === 'Reject' ? 'rejected' : 'resolved'}">\${c.status.replace('-', ' ')}</span></td>
+          <td><span class="badge-status ${c.status === 'Reject' ? 'rejected' : 'resolved'}">${c.status.replace('-', ' ')}</span></td>
           <td style="font-size:0.82rem;">Agent #10</td>
-          <td style="font-size:0.78rem;color:var(--cx-text-muted);">\${new Date(c.created_at).toLocaleDateString()}</td>
-          \${isAdmin ? \`
+          <td style="font-size:0.78rem;color:var(--cx-text-muted);">${new Date(c.created_at).toLocaleDateString()}</td>
+          ${isAdmin ? `
             <td style="text-align:right;">
-              \${score >= 50 && score < 80
-                ? \`<div style="display:flex;gap:4px;justify-content:flex-end;">
+              ${score >= 50 && score < 80
+                ? `<div style="display:flex;gap:4px;justify-content:flex-end;">
                      <button style="background:#22c55e;color:#fff;border:none;padding:4px 8px;border-radius:6px;font-size:0.72rem;font-weight:700;cursor:pointer;">✓</button>
                      <button style="background:#ef4444;color:#fff;border:none;padding:4px 8px;border-radius:6px;font-size:0.72rem;font-weight:700;cursor:pointer;">✕</button>
-                   </div>\`
-                : \`<span style="font-size:0.72rem;color:var(--cx-text-muted);">—</span>\`
+                   </div>`
+                : `<span style="font-size:0.72rem;color:var(--cx-text-muted);">—</span>`
               }
-            </td>\` : ''}
+            </td>` : ''}
         </tr>
-      \`}).join('');
+      `}).join('');
     } else {
-      tbody.innerHTML = \`<tr><td colspan="\${isAdmin ? 10 : 9}" style="text-align:center; padding:20px; color:#64748b;">No claims found.</td></tr>\`;
+      tbody.innerHTML = `<tr><td colspan="${isAdmin ? 10 : 9}" style="text-align:center; padding:20px; color:#64748b;">No claims found.</td></tr>`;
     }
   } catch (err) {
-    tbody.innerHTML = \`<tr><td colspan="\${isAdmin ? 10 : 9}" style="text-align:center; padding:20px; color:#dc2626;">Error loading claims: \${err.message}</td></tr>\`;
+    tbody.innerHTML = `<tr><td colspan="${isAdmin ? 10 : 9}" style="text-align:center; padding:20px; color:#dc2626;">Error loading claims: ${err.message}</td></tr>`;
   }
 };
 
@@ -299,21 +299,21 @@ window.cxSendRagChat = async function() {
   const orderId = orderMatch ? orderMatch[0].toUpperCase() : null;
   
   // Append user message
-  messagesEl.innerHTML += \`
+  messagesEl.innerHTML += `
     <div style="align-self:flex-end; background:#4f46e5; color:#fff; padding:10px 14px; border-radius:12px 12px 0 12px; font-size:0.85rem; max-width:80%; box-shadow:0 2px 4px rgba(79,70,229,0.3);">
-      \${query}
+      ${query}
     </div>
-  \`;
+  `;
   inputEl.value = '';
   messagesEl.scrollTop = messagesEl.scrollHeight;
   
   // Append loading indicator
   const loadingId = 'loading-' + Date.now();
-  messagesEl.innerHTML += \`
-    <div id="\${loadingId}" style="align-self:flex-start; background:#fff; padding:10px 14px; border-radius:12px 12px 12px 0; border:1px solid #cbd5e1; font-size:0.85rem; max-width:80%; box-shadow:0 2px 4px rgba(0,0,0,0.05); color:#64748b;">
+  messagesEl.innerHTML += `
+    <div id="${loadingId}" style="align-self:flex-start; background:#fff; padding:10px 14px; border-radius:12px 12px 12px 0; border:1px solid #cbd5e1; font-size:0.85rem; max-width:80%; box-shadow:0 2px 4px rgba(0,0,0,0.05); color:#64748b;">
       Thinking...
     </div>
-  \`;
+  `;
   messagesEl.scrollTop = messagesEl.scrollHeight;
   
   try {
@@ -328,20 +328,20 @@ window.cxSendRagChat = async function() {
     if (loadingEl) loadingEl.remove();
     
     // Append AI response
-    messagesEl.innerHTML += \`
+    messagesEl.innerHTML += `
       <div style="align-self:flex-start; background:#fff; padding:10px 14px; border-radius:12px 12px 12px 0; border:1px solid #cbd5e1; font-size:0.85rem; max-width:80%; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
-        <div style="white-space:pre-wrap; line-height:1.5;">\${data.answer}</div>
-        \${data.sources && data.sources.length > 0 ? \`<div style="margin-top:6px; font-size:0.7rem; color:#10b981; font-weight:700;">Sources: \${data.sources.join(', ')}</div>\` : ''}
+        <div style="white-space:pre-wrap; line-height:1.5;">${data.answer}</div>
+        ${data.sources && data.sources.length > 0 ? `<div style="margin-top:6px; font-size:0.7rem; color:#10b981; font-weight:700;">Sources: ${data.sources.join(', ')}</div>` : ''}
       </div>
-    \`;
+    `;
   } catch (err) {
     const loadingEl = document.getElementById(loadingId);
     if (loadingEl) loadingEl.remove();
-    messagesEl.innerHTML += \`
+    messagesEl.innerHTML += `
       <div style="align-self:flex-start; background:#fef2f2; color:#dc2626; padding:10px 14px; border-radius:12px 12px 12px 0; border:1px solid #fecaca; font-size:0.85rem; max-width:80%;">
-        Error connecting to RAG Agent: \${err.message}
+        Error connecting to RAG Agent: ${err.message}
       </div>
-    \`;
+    `;
   }
   messagesEl.scrollTop = messagesEl.scrollHeight;
 };

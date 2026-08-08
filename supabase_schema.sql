@@ -64,3 +64,13 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 CREATE OR REPLACE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();
+
+-- ==========================================
+-- EMERGENCY FIX: BACKFILL MISSING PROFILES
+-- ==========================================
+-- If you created users BEFORE running this schema, they won't have a profile.
+-- This causes saving to user_history to fail silently due to foreign key constraints.
+-- Running this block will fix that issue for all existing users:
+INSERT INTO public.user_profiles (id, email)
+SELECT id, email FROM auth.users
+WHERE id NOT IN (SELECT id FROM public.user_profiles);
