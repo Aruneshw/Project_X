@@ -515,6 +515,24 @@ window.cxExecute5StepPipeline = async function(event) {
     updateStep(4, 'active', '100%', '<span style="color:#059669; font-weight:800;">✓ Pass</span>');
     updateStep(5, 'active', '100%', `<span style="color:${data.ai_score >= 80 ? '#059669' : '#dc2626'}; font-weight:800;">⚡ ${data.decision} (Score: ${data.ai_score}%)</span>`);
     
+    if (window.supabase) {
+      try {
+        const { data: { user } } = await window.supabase.auth.getUser();
+        if (user) {
+          await window.supabase.from('user_history').insert([{
+            user_id: user.id,
+            claim_id: data.claim_id || `CLM-${Math.floor(Math.random()*9000)+1000}`,
+            issue_type: type,
+            description: desc,
+            ai_score: data.ai_score,
+            status: data.decision
+          }]);
+        }
+      } catch (e) {
+        console.error("Supabase insert error", e);
+      }
+    }
+
     setTimeout(() => {
       document.getElementById('home-claim-modal').style.display = 'none';
       showModal({
@@ -543,6 +561,24 @@ window.cxExecute5StepPipeline = async function(event) {
     updateStep(4, 'active', '100%', '<span style="color:#059669; font-weight:800;">✓ Pass (Demo Mode)</span>');
     updateStep(5, 'active', '100%', `<span style="color:#059669; font-weight:800;">⚡ ${mockDecision} (Score: ${mockScore}%)</span>`);
     
+    if (window.supabase) {
+      try {
+        const { data: { user } } = await window.supabase.auth.getUser();
+        if (user) {
+          await window.supabase.from('user_history').insert([{
+            user_id: user.id,
+            claim_id: `CLM-${Math.floor(Math.random()*9000)+1000}`,
+            issue_type: type,
+            description: desc,
+            ai_score: mockScore,
+            status: mockDecision
+          }]);
+        }
+      } catch (e) {
+        console.error("Supabase insert error", e);
+      }
+    }
+
     setTimeout(() => {
       document.getElementById('home-claim-modal').style.display = 'none';
       showModal({

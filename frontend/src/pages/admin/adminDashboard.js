@@ -700,11 +700,22 @@ setTimeout(() => {
 window.cxLoadDbHistory = async function() {
   const tbody = document.getElementById('db-history-tbody');
   if (!tbody) return;
+  
+  if (!window.supabase) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#dc2626;">Supabase client not initialized.</td></tr>';
+    return;
+  }
+
   try {
-    const res = await fetch((import.meta.env.VITE_API_URL || 'http://localhost:8000') + '/api/v1/claims/history');
-    const data = await res.json();
-    if (data.history && data.history.length > 0) {
-      tbody.innerHTML = data.history.map(h => `
+    const { data: history, error } = await window.supabase
+      .from('user_history')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    if (history && history.length > 0) {
+      tbody.innerHTML = history.map(h => `
         <tr>
           <td style="font-family:monospace; font-weight:700; color:#4f46e5;">${h.claim_id}</td>
           <td style="font-family:monospace; font-size:0.75rem; color:#64748b;">${h.user_id}</td>
@@ -718,6 +729,6 @@ window.cxLoadDbHistory = async function() {
       tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#64748b;">No records found in database.</td></tr>';
     }
   } catch (err) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:#dc2626;">Error loading database records.</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#dc2626;">Error loading database records: ${err.message}</td></tr>`;
   }
 };

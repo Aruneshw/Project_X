@@ -17,22 +17,6 @@ export function renderRightPanel() {
 
   return `
     <div class="right-panel">
-      <!-- Quick Navigation Card -->
-      <div class="security-card" style="flex-direction:column; gap:10px; align-items:flex-start;">
-        <div style="font-size:0.85rem; font-weight:800; color:#0f172a; margin-bottom:4px;">Quick Navigation</div>
-        ${isAdmin ? `
-          <button class="quick-nav-btn" onclick="cxNavigate('adminDashboard')"><span>🛡️</span> Admin Control Center</button>
-          <button class="quick-nav-btn" onclick="cxNavigate('agents')"><span>🤖</span> 13-Agent Monitor</button>
-          <button class="quick-nav-btn" onclick="cxNavigate('claims')"><span>📋</span> Claims Management</button>
-          <button class="quick-nav-btn" onclick="cxNavigate('analytics')"><span>📊</span> Analytics & RL Insights</button>
-        ` : `
-          <button class="quick-nav-btn" onclick="cxNavigate('home')"><span>🏠</span> Home & File Complaint</button>
-          <button class="quick-nav-btn" onclick="cxNavigate('cases')"><span>📋</span> My Cases & Claims</button>
-          <button class="quick-nav-btn" onclick="cxNavigate('review')"><span>⭐</span> Submit Review</button>
-          <button class="quick-nav-btn" onclick="cxNavigate('profile')"><span>👤</span> My Profile</button>
-        `}
-      </div>
-
       <!-- Security & Compliance Card -->
       <div class="security-card" style="flex-direction:column; gap:6px; align-items:flex-start;">
         <div style="display:flex; gap:8px; align-items:center;">
