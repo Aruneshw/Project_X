@@ -42,3 +42,5 @@ pymupdf
 sentence-transformers
 langchain-huggingface
 langchain-community
+easyocr==1.7.1
+opencv-python-headless==4.9.0.80
