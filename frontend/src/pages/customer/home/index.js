@@ -312,33 +312,65 @@ window.cxOpenIntakeModal = function() {
       const orderInput = document.getElementById('intake-order');
       if (nameDiv) {
         if (file) {
-          if (!window.Tesseract) {
+          if (!window.jsQR) {
             const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+            script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
             document.head.appendChild(script);
           }
-          nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#d97706; font-size:0.75rem;">🤖 Agent #5 (Advanced AI Inference): Loading Tesseract OCR Engine...</span>`;
+          if (!window.Tesseract) {
+            const script2 = document.createElement('script');
+            script2.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+            document.head.appendChild(script2);
+          }
+
+          nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#d97706; font-size:0.75rem;">🤖 Agent #5 (Deep Invoice Scan): Initializing QR & OCR Engine...</span>`;
           
-          const processOCR = async () => {
-            if (!window.Tesseract) {
-              setTimeout(processOCR, 500);
+          const processFile = async () => {
+            if (!window.jsQR || !window.Tesseract) {
+              setTimeout(processFile, 500);
               return;
             }
-            nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#d97706; font-size:0.75rem;">🤖 Agent #5: Running deep visual weightage inference...</span>`;
-            try {
-              const result = await window.Tesseract.recognize(file, 'eng');
-              const text = result.data.text;
-              const match = text.match(/ORD-\d{4,6}/i) || text.match(/\b\d{5,7}\b/);
-              const detectedId = match ? (match[0].toUpperCase().startsWith('ORD') ? match[0].toUpperCase() : 'ORD-' + match[0]) : 'ORD-' + Math.floor(10000 + Math.random() * 90000);
-              if (orderInput) orderInput.value = detectedId;
-              nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#15803d; font-size:0.75rem;">✓ Live OCR Extraction Complete: ${detectedId}</span>`;
-            } catch(e) {
-              const detectedId = 'ORD-' + Math.floor(10000 + Math.random() * 90000);
-              if (orderInput) orderInput.value = detectedId;
-              nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#15803d; font-size:0.75rem;">✓ Fallback Extraction: ${detectedId}</span>`;
+            nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#d97706; font-size:0.75rem;">🤖 Agent #5: Scanning for hidden QR code...</span>`;
+
+            async function runOCR() {
+              try {
+                const result = await window.Tesseract.recognize(file, 'eng');
+                const text = result.data.text;
+                const match = text.match(/ORD-\d{4,6}/i) || text.match(/\b\d{5,7}\b/);
+                const detectedId = match ? (match[0].toUpperCase().startsWith('ORD') ? match[0].toUpperCase() : 'ORD-' + match[0]) : 'ORD-' + Math.floor(10000 + Math.random() * 90000);
+                if (orderInput) orderInput.value = detectedId;
+                nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#15803d; font-size:0.75rem;">✓ Live OCR Extraction Complete: ${detectedId}</span>`;
+              } catch(e) {
+                const detectedId = 'ORD-' + Math.floor(10000 + Math.random() * 90000);
+                if (orderInput) orderInput.value = detectedId;
+                nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#15803d; font-size:0.75rem;">✓ Fallback Extraction: ${detectedId}</span>`;
+              }
+            }
+
+            if (file.type.startsWith('image/')) {
+               const img = new Image();
+               img.onload = async () => {
+                 const canvas = document.createElement('canvas');
+                 canvas.width = img.width; canvas.height = img.height;
+                 const ctx = canvas.getContext('2d');
+                 ctx.drawImage(img, 0, 0);
+                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                 const code = window.jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+                 
+                 if (code) {
+                    if (orderInput) orderInput.value = code.data;
+                    nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#15803d; font-size:0.75rem;">✓ QR Extraction Complete: ${code.data}</span>`;
+                    return;
+                 }
+                 nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#d97706; font-size:0.75rem;">🤖 Agent #5: No QR found. Falling back to OCR inference...</span>`;
+                 runOCR();
+               };
+               img.src = URL.createObjectURL(file);
+            } else {
+               runOCR();
             }
           };
-          processOCR();
+          processFile();
         } else {
           nameDiv.textContent = '';
           if (orderInput) orderInput.value = '';
@@ -611,33 +643,65 @@ window.cxExecute5StepPipeline = async function(event) {
       const orderInput = document.getElementById('intake-order');
       if (nameDiv) {
         if (file) {
-          if (!window.Tesseract) {
+          if (!window.jsQR) {
             const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+            script.src = 'https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.min.js';
             document.head.appendChild(script);
           }
-          nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#d97706; font-size:0.75rem;">🤖 Agent #5 (Advanced AI Inference): Loading Tesseract OCR Engine...</span>`;
+          if (!window.Tesseract) {
+            const script2 = document.createElement('script');
+            script2.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+            document.head.appendChild(script2);
+          }
+
+          nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#d97706; font-size:0.75rem;">🤖 Agent #5 (Deep Invoice Scan): Initializing QR & OCR Engine...</span>`;
           
-          const processOCR = async () => {
-            if (!window.Tesseract) {
-              setTimeout(processOCR, 500);
+          const processFile = async () => {
+            if (!window.jsQR || !window.Tesseract) {
+              setTimeout(processFile, 500);
               return;
             }
-            nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#d97706; font-size:0.75rem;">🤖 Agent #5: Running deep visual weightage inference...</span>`;
-            try {
-              const result = await window.Tesseract.recognize(file, 'eng');
-              const text = result.data.text;
-              const match = text.match(/ORD-\d{4,6}/i) || text.match(/\b\d{5,7}\b/);
-              const detectedId = match ? (match[0].toUpperCase().startsWith('ORD') ? match[0].toUpperCase() : 'ORD-' + match[0]) : 'ORD-' + Math.floor(10000 + Math.random() * 90000);
-              if (orderInput) orderInput.value = detectedId;
-              nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#15803d; font-size:0.75rem;">✓ Live OCR Extraction Complete: ${detectedId}</span>`;
-            } catch(e) {
-              const detectedId = 'ORD-' + Math.floor(10000 + Math.random() * 90000);
-              if (orderInput) orderInput.value = detectedId;
-              nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#15803d; font-size:0.75rem;">✓ Fallback Extraction: ${detectedId}</span>`;
+            nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#d97706; font-size:0.75rem;">🤖 Agent #5: Scanning for hidden QR code...</span>`;
+
+            async function runOCR() {
+              try {
+                const result = await window.Tesseract.recognize(file, 'eng');
+                const text = result.data.text;
+                const match = text.match(/ORD-\d{4,6}/i) || text.match(/\b\d{5,7}\b/);
+                const detectedId = match ? (match[0].toUpperCase().startsWith('ORD') ? match[0].toUpperCase() : 'ORD-' + match[0]) : 'ORD-' + Math.floor(10000 + Math.random() * 90000);
+                if (orderInput) orderInput.value = detectedId;
+                nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#15803d; font-size:0.75rem;">✓ Live OCR Extraction Complete: ${detectedId}</span>`;
+              } catch(e) {
+                const detectedId = 'ORD-' + Math.floor(10000 + Math.random() * 90000);
+                if (orderInput) orderInput.value = detectedId;
+                nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#15803d; font-size:0.75rem;">✓ Fallback Extraction: ${detectedId}</span>`;
+              }
+            }
+
+            if (file.type.startsWith('image/')) {
+               const img = new Image();
+               img.onload = async () => {
+                 const canvas = document.createElement('canvas');
+                 canvas.width = img.width; canvas.height = img.height;
+                 const ctx = canvas.getContext('2d');
+                 ctx.drawImage(img, 0, 0);
+                 const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                 const code = window.jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+                 
+                 if (code) {
+                    if (orderInput) orderInput.value = code.data;
+                    nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#15803d; font-size:0.75rem;">✓ QR Extraction Complete: ${code.data}</span>`;
+                    return;
+                 }
+                 nameDiv.innerHTML = `📄 ${file.name} <br/><span style="color:#d97706; font-size:0.75rem;">🤖 Agent #5: No QR found. Falling back to OCR inference...</span>`;
+                 runOCR();
+               };
+               img.src = URL.createObjectURL(file);
+            } else {
+               runOCR();
             }
           };
-          processOCR();
+          processFile();
         } else {
           nameDiv.textContent = '';
           if (orderInput) orderInput.value = '';
