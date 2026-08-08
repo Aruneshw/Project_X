@@ -13,6 +13,25 @@
     <link rel="apple-touch-icon" href="/favicon.svg" />
   </head>
   <body>
+    <script>
+      // Self-destruct any existing service workers to prevent cache blocking on Vercel
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          for (let registration of registrations) {
+            registration.unregister();
+            console.log('ServiceWorker unregistered.');
+          }
+        });
+      }
+      // Nuke existing caches
+      if ('caches' in window) {
+        caches.keys().then(function(names) {
+          for (let name of names) {
+            caches.delete(name);
+          }
+        });
+      }
+    </script>
     <div id="app"></div>
     <script type="module" src="/src/main.js"></script>
   </body>
