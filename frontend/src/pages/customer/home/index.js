@@ -423,9 +423,6 @@ window.cxRunCVChallenge = async function() {
   if (!btn || !text || !video) return;
   btn.disabled = true;
   progress.style.display = 'block';
-  fill.style.width = '10%';
-  text.innerHTML = 'Layer 1: <span style="color:#2563eb;">Initializing QR Deep Scan...</span>';
-
   fill.style.width = '33%';
   text.innerHTML = 'Layer 1: <span style="color:#2563eb;">YOLOv8 Edge & Contour Mapping...</span>';
 
@@ -458,9 +455,8 @@ window.cxCapturePhoto = function() {
   
   if (btn) btn.textContent = 'Processing Data...';
   
-  // Directly close overlay after capture, skipping the 3s mock video record 
-  // since we now do real QR deep scan
-  document.getElementById('captured-video-data').value = 'qr_verified_deep_scan';
+  // Close overlay after capture
+  document.getElementById('captured-video-data').value = 'liveness_verified';
   
   const note = document.getElementById('camera-status-note');
   if (note) note.style.display = 'block';
