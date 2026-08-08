@@ -16,7 +16,7 @@ def test_claims_process_auto_resolve():
         "order": "ORD-12345",
         "description": "The item was severely damaged upon arrival.",
         "image_b64": "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEAAAAAAAD/...",  # length > 1000
-        "video_b64": "qr_verified_deep_scan",
+        "video_b64": "object_detection_deep_scan",
         "invoice_name": "receipt_ORD-12345.pdf"
     }
     

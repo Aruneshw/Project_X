@@ -1,7 +1,8 @@
 export function renderSidebar(currentPage) {
   const NAV = [
-    { id: 'home', label: 'Home', icon: '🏠' },
+    { id: 'userDashboard', label: 'File a Complaint', icon: '🏠' },
     { id: 'cases', label: 'My Cases', icon: '📋' },
+    { id: 'policyChat', label: 'Policy Chat', icon: '💬' },
     { id: 'review', label: 'Review', icon: '⭐' },
     { id: 'profile', label: 'Profile', icon: '👤' },
   ];

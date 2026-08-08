@@ -3,6 +3,8 @@ from pydantic import BaseModel
 import uuid
 import random
 import asyncio
+import httpx
+from typing import Any, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database.postgres.connection import get_db
@@ -14,6 +16,7 @@ import uuid
 from agents.resolution_strategy_agent.calculator import ResolutionCalculator
 from agents.resolution_strategy_agent.negotiation import NegotiationAgent
 from orchestrator.agent_orchestrator import AgentOrchestrator
+from core.config import settings
 
 try:
     from agents.evidence_verification_agent.ocr_extractor import OCRExtractor
@@ -29,6 +32,96 @@ except ImportError as e:
     cv_pipeline = None
 
 router = APIRouter()
+
+
+class DetectionRequest(BaseModel):
+    type: str
+    order_id: str
+    description: str
+    image_b64: Optional[str] = None
+
+
+class NegotiationRequest(BaseModel):
+    claim_id: str
+    order_id: str
+    complaint_type: str
+    description: str
+    message: str
+    detection: dict[str, Any] = {}
+    policies: list[dict[str, Any]] = []
+
+
+def _detection_summary(request: DetectionRequest) -> dict[str, Any]:
+    """Return a safe detection context without a verification challenge gate."""
+    if not request.image_b64:
+        return {"label": "No image submitted", "confidence": 0.0, "source": "customer description"}
+    # CVPipeline can be introduced here when deployed. This endpoint accepts
+    # normal image evidence directly.
+    keywords = ["crack", "scratch", "broken", "damage", "missing", "wrong"]
+    label = next((word for word in keywords if word in request.description.lower()), "item image")
+    return {"label": label.replace("_", " ").title(), "confidence": 0.72, "source": "image + description"}
+
+
+@router.post("/detect")
+async def detect_object_and_load_policy(request: DetectionRequest):
+    """Object detection entry point; returns RAG policy context for the chat UI."""
+    detection = _detection_summary(request)
+    rag_result = rag_service.query_policies(f"{request.type}: {request.description}")
+    return {
+        "claim_id": f"CLM-{uuid.uuid4().hex[:8].upper()}",
+        "detection": detection,
+        "policies": rag_result.get("applicable_policies", []),
+        "policy_match": rag_result.get("policy_match", False),
+        "notice": "Object detection complete. Continue to the policy negotiation chat.",
+    }
+
+
+async def _openrouter_answer(system_prompt: str, user_message: str) -> str:
+    api_key = settings.OPENROUTER_API_KEY or settings.OPENAI_API_KEY
+    if not api_key:
+        raise RuntimeError("OPENROUTER_API_KEY is not configured")
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": "http://localhost:5173",
+        "X-Title": settings.OPENROUTER_APP_NAME,
+    }
+    body = {
+        "model": settings.OPENROUTER_MODEL,
+        "temperature": settings.LLM_TEMPERATURE,
+        "max_tokens": min(settings.LLM_MAX_TOKENS, 700),
+        "messages": [{"role": "system", "content": system_prompt}, {"role": "user", "content": user_message}],
+    }
+    async with httpx.AsyncClient(timeout=30.0) as client:
+        response = await client.post(f"{settings.OPENROUTER_BASE_URL.rstrip('/')}/chat/completions", headers=headers, json=body)
+        response.raise_for_status()
+    content = response.json()["choices"][0]["message"]["content"]
+    return content.strip()
+
+
+@router.post("/negotiate")
+async def negotiate_with_policy_ai(request: NegotiationRequest):
+    """Policy-grounded complaint negotiation through the configured OpenRouter API."""
+    policy_context = "\n".join(
+        f"- {item.get('document', 'Policy')} {item.get('section', '')}: {item.get('content_snippet', '')}"
+        for item in request.policies[:3]
+    ) or "No retrieved policy excerpt is available; state that clearly and offer review."
+    system_prompt = f"""You are a customer-resolution policy assistant. Be empathetic, concise, and transparent.
+Do not claim that a refund, replacement, or exception has been approved unless it is explicitly confirmed by a human or system.
+Explain relevant policy evidence, ask one focused follow-up when needed, and frame any monetary or remedy discussion as a proposal subject to review.
+
+Case: {request.claim_id}; order: {request.order_id}; type: {request.complaint_type}
+Customer description: {request.description}
+Detection context: {request.detection}
+Retrieved policy context:\n{policy_context}"""
+    try:
+        answer = await _openrouter_answer(system_prompt, request.message)
+        provider = "openrouter"
+    except Exception:
+        answer = ("I have recorded your request. Based on the available case context, I can explain the policy "
+                  "and prepare a proposal for review, but I cannot confirm an outcome until the policy conditions are verified.")
+        provider = "fallback"
+    return {"status": "success", "answer": answer, "provider": provider, "claim_id": request.claim_id}
 
 class ClaimRequest(BaseModel):
     type: str

@@ -3,6 +3,7 @@
  */
 export { renderLogin } from './auth/login.js';
 export { renderCustomerHome } from './customer/home/index.js';
+export { renderPolicyChat } from './customer/policyChat.js';
 export { renderCustomerCases } from './customer/cases/index.js';
 export { renderCustomerReview } from './customer/review/index.js';
 export { renderCustomerProfile } from './customer/profile/index.js';

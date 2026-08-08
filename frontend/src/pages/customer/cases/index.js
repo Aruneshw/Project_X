@@ -2,11 +2,9 @@
  * Enterprise CX Platform — Customer Cases Page
  * Styled completely using the Board Cards visual system and ListContainer visual tokens.
  */
-import { MOCK_CLAIMS } from '../../../utils/data.js';
+import { supabase } from '../../../utils/supabase.js';
 
 export function renderCustomerCases() {
-  const myClaims = MOCK_CLAIMS;
-
   return `
     <div class="customer-cases-wrapper" style="display:flex; flex-direction:column; gap:24px;">
       <!-- Pinned Header Card (Warm Green Board Card style) -->
@@ -14,10 +12,10 @@ export function renderCustomerCases() {
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
           <div>
             <span style="font-size:0.75rem; font-weight:800; color:#1e293b; text-transform:uppercase; letter-spacing:0.08em;">Case Tracking</span>
-            <h1 style="font-size:1.6rem; font-weight:800; color:#1e293b; margin:4px 0 0 0;">My Cases & Dispute History</h1>
-            <p style="color:#1e293b; opacity:0.85; font-size:0.88rem; margin-top:2px;">Track real-time AI scoring, agent assignments, and resolution status for all your claims.</p>
+            <h1 style="font-size:1.6rem; font-weight:800; color:#1e293b; margin:4px 0 0 0;">My complaint log</h1>
+            <p style="color:#1e293b; opacity:0.85; font-size:0.88rem; margin-top:2px;">These records belong to your signed-in account. They include your object detection and policy negotiation cases.</p>
           </div>
-          <button class="btn btn-primary" onclick="cxNavigate('home')" style="border:2px solid #1e293b; box-shadow:3px 3px 0 #1e293b;">
+          <button class="btn btn-primary" onclick="cxNavigate('userDashboard')" style="border:2px solid #1e293b; box-shadow:3px 3px 0 #1e293b;">
             + File New Complaint
           </button>
         </div>
@@ -43,32 +41,35 @@ export function renderCustomerCases() {
               </tr>
             </thead>
             <tbody>
-              ${myClaims.map(c => `
-                <tr style="transition:background 0.2s;">
-                  <td style="padding:14px 12px; border-bottom:2px dashed #cbd5e1; font-family:monospace; font-weight:800; color:#4f46e5;">${c.id}</td>
-                  <td style="padding:14px 12px; border-bottom:2px dashed #cbd5e1; font-weight:800; color:#1e293b;">${c.type}</td>
-                  <td style="padding:14px 12px; border-bottom:2px dashed #cbd5e1; font-family:monospace; color:#64748b; font-weight:700;">${c.order}</td>
-                  <td style="padding:14px 12px; border-bottom:2px dashed #cbd5e1;">
-                    <div style="display:flex; align-items:center; gap:8px;">
-                      <div class="lc-progress-track" style="max-width:120px; margin:0;">
-                        <div class="lc-progress-fill" style="width:${c.score}%; background-color:${c.score >= 80 ? '#22c55e' : c.score >= 50 ? '#ffb84d' : '#ef4444'};"></div>
-                      </div>
-                      <span style="font-weight:800; font-size:0.85rem; color:#1e293b;">${c.score}%</span>
-                    </div>
-                  </td>
-                  <td style="padding:14px 12px; border-bottom:2px dashed #cbd5e1;">
-                    <span class="badge-status ${c.status}" style="border:1.5px solid #1e293b; font-weight:800; box-shadow:2px 2px 0 #1e293b;">
-                      ${c.status.toUpperCase().replace('-', ' ')}
-                    </span>
-                  </td>
-                  <td style="padding:14px 12px; border-bottom:2px dashed #cbd5e1; font-weight:700; color:#1e293b;">${c.agent}</td>
-                  <td style="padding:14px 12px; border-bottom:2px dashed #cbd5e1; color:#64748b; font-size:0.82rem; font-weight:700;">${c.created}</td>
-                </tr>
-              `).join('')}
+              <tr><td colspan="7" id="my-cases-loading" style="padding:20px;text-align:center;color:#64748b;">Loading your complaint records…</td></tr>
             </tbody>
           </table>
         </div>
       </div>
     </div>
   `;
+  queueMicrotask(loadMyCases);
+}
+
+async function loadMyCases() {
+  const target = document.getElementById('my-cases-loading');
+  if (!target) return;
+  if (!supabase) { target.textContent = 'Supabase is not configured.'; return; }
+  const safe = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
+  const { data, error } = await supabase.from('user_history').select('*').order('created_at', { ascending: false });
+  if (error) { target.textContent = `Could not load your complaint records: ${error.message}`; return; }
+  if (!data?.length) { target.textContent = 'No complaint records yet. File a complaint to begin.'; return; }
+  target.parentElement.innerHTML = data.map(item => {
+    const order = item.resolution_data?.order_id || '—';
+    const score = Math.max(0, Math.min(100, Number(item.ai_score || 0)));
+    return `<tr>
+      <td style="padding:14px 12px;border-bottom:2px dashed #cbd5e1;font-family:monospace;font-weight:800;color:#4f46e5;">${safe(item.claim_id)}</td>
+      <td style="padding:14px 12px;border-bottom:2px dashed #cbd5e1;font-weight:800;">${safe(item.issue_type)}</td>
+      <td style="padding:14px 12px;border-bottom:2px dashed #cbd5e1;font-family:monospace;">${safe(order)}</td>
+      <td style="padding:14px 12px;border-bottom:2px dashed #cbd5e1;"><div class="lc-progress-track" style="max-width:120px;margin:0;display:inline-block;"><div class="lc-progress-fill" style="width:${score}%;"></div></div> ${score}%</td>
+      <td style="padding:14px 12px;border-bottom:2px dashed #cbd5e1;"><span class="badge-status resolved">${safe(item.status)}</span></td>
+      <td style="padding:14px 12px;border-bottom:2px dashed #cbd5e1;">Policy assistant</td>
+      <td style="padding:14px 12px;border-bottom:2px dashed #cbd5e1;font-size:.8rem;">${safe(new Date(item.created_at).toLocaleString())}</td>
+    </tr>`;
+  }).join('');
 }

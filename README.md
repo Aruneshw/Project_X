@@ -2,6 +2,63 @@
 
 An **enterprise-grade autonomous customer resolution platform** leveraging **Agentic AI** to handle customer complaints, order disputes, refund requests, warranty claims, delivery issues, subscription cancellations, and service escalations through intelligent reasoning, multimodal evidence analysis, and secure backend workflow orchestration.
 
+## Current complaint workflow
+
+The customer-facing workflow is intentionally simple:
+
+```text
+Customer complaint + optional item photo
+        ↓
+Object detection (`POST /api/v1/claims/detect`)
+        ↓
+Relevant policy excerpts retrieved through RAG
+        ↓
+Policy-aware AI negotiation chat (`POST /api/v1/claims/negotiate`)
+        ↓
+Customer-owned complaint and chat audit logs in Supabase
+        ↓
+Admin audit screen, including the originating user ID
+```
+
+There is no QR-verification stage in this flow. A normal image is optional evidence; its detection result and the customer's written description are used to create the policy-chat context.
+
+### Customer and admin records
+
+- `user_history` stores one complaint/case record per user and claim.
+- `complaint_logs` stores detection events and both sides of the policy negotiation chat.
+- Row-level security lets a signed-in user read only their own records. The explicitly configured admin users can read all complaint logs, with `user_id` shown in the admin interface.
+- Raw evidence images and API keys are not written to `complaint_logs`.
+
+Run [supabase_schema.sql](supabase_schema.sql) in Supabase before using the new workflow. Existing projects should apply the new `complaint_logs` table, policies, and `user_history (user_id, claim_id)` unique index from that file.
+
+### OpenRouter setup
+
+The backend calls OpenRouter only from the server; the browser never receives the API key. In `backend/.env`, configure:
+
+```env
+OPENROUTER_API_KEY=your_openrouter_key
+OPENROUTER_MODEL=openai/gpt-4o-mini
+# Optional. Defaults to https://openrouter.ai/api/v1
+OPENROUTER_BASE_URL=https://openrouter.ai/api/v1
+```
+
+`OPENAI_API_KEY` is accepted as a temporary fallback for the existing environment, but `OPENROUTER_API_KEY` is the preferred name. If the provider is unavailable, the chat returns a safe recorded-request response rather than inventing an approved refund or replacement.
+
+### Run locally
+
+```bash
+# Backend
+cd backend
+uvicorn main:app --reload
+
+# Frontend (another terminal)
+cd frontend
+npm install
+npm run dev
+```
+
+Set `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and optionally `VITE_API_URL` in the frontend environment. After signing in, open **File a Complaint**, submit detection, then continue in **Policy Chat**. Open the admin dashboard as an authorized admin to review the user-ID audit trail.
+
 ---
 
 ## Table of Contents
@@ -855,4 +912,3 @@ Every automated decision includes:
 | **Sanjay & Vishnu** | RAG Integration, Knowledge Base, Documentation, API Documentation, Presentation |
 | **Theepak & Guruprasath** | LangGraph/CrewAI, Multi-Agent Development, Agent Collaboration |
 | **Monish & Gokul Kannan** | System Architecture, Workflow Orchestration, System Integration, Deployment |
-

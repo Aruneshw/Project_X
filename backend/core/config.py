@@ -65,9 +65,13 @@ class Settings(BaseSettings):
     S3_BUCKET_EVIDENCE: str = "evidence"
 
     # ── LLM / AI ─────────────────────────────────────────
-    LLM_PROVIDER: str = "openai"  # openai | local
+    LLM_PROVIDER: str = "openrouter"  # openrouter | openai | local
     OPENAI_API_KEY: Optional[str] = None
-    LLM_MODEL: str = "gpt-4o"
+    OPENROUTER_API_KEY: Optional[str] = None
+    OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
+    OPENROUTER_MODEL: str = "openai/gpt-4o-mini"
+    OPENROUTER_APP_NAME: str = "Enterprise CX Platform"
+    LLM_MODEL: str = "openai/gpt-4o-mini"
     LLM_TEMPERATURE: float = 0.1
     LLM_MAX_TOKENS: int = 4096
 

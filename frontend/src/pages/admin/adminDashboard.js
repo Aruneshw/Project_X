@@ -25,6 +25,11 @@ if (!window.cxSystemLogs) {
 export function renderAdminDashboard() {
   const escalationQueue = MOCK_CLAIMS.filter(c => c.score >= 50 && c.score < 80);
   const fraudQueue = MOCK_CLAIMS.filter(c => c.score < 50);
+  queueMicrotask(() => {
+    window.cxLoadDbHistory?.();
+    window.cxLoadComplaintLogs?.();
+    window.cxLoadPolicies?.();
+  });
 
   return `
     <div>
@@ -350,6 +355,22 @@ export function renderAdminDashboard() {
                 <td colspan="6" style="text-align:center; color:#64748b;">Loading database records...</td>
               </tr>
             </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-bottom:24px;" id="admin-complaint-logs">
+        <div class="card__header" style="display:flex; justify-content:space-between; align-items:center;">
+          <div>
+            <span class="card__title">🧾 Customer-owned complaint audit trail</span>
+            <p style="font-size:0.78rem; color:var(--cx-text-muted); margin-top:2px;">Detection and policy-chat events. Each row includes the originating user ID.</p>
+          </div>
+          <button class="btn btn-secondary btn-sm" onclick="cxLoadComplaintLogs()">🔄 Refresh logs</button>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="claim-table">
+            <thead><tr><th>Time</th><th>User ID</th><th>Claim ID</th><th>Event</th><th>Details</th></tr></thead>
+            <tbody id="complaint-logs-tbody"><tr><td colspan="5" style="text-align:center;color:#64748b;">Loading complaint logs...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -695,7 +716,34 @@ setTimeout(() => {
   if (document.getElementById('db-history-tbody')) {
     window.cxLoadDbHistory();
   }
+  if (document.getElementById('complaint-logs-tbody')) {
+    window.cxLoadComplaintLogs();
+  }
 }, 500);
+
+window.cxLoadComplaintLogs = async function() {
+  const tbody = document.getElementById('complaint-logs-tbody');
+  if (!tbody) return;
+  if (!window.supabase) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#dc2626;">Supabase client not initialized.</td></tr>';
+    return;
+  }
+  const safe = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
+  try {
+    const { data, error } = await window.supabase.from('complaint_logs').select('*').order('created_at', { ascending: false }).limit(200);
+    if (error) throw error;
+    tbody.innerHTML = data?.length ? data.map(log => `
+      <tr>
+        <td style="font-size:.78rem;color:#475569;white-space:nowrap;">${safe(new Date(log.created_at).toLocaleString())}</td>
+        <td style="font-family:monospace;font-size:.75rem;color:#4f46e5;">${safe(log.user_id)}</td>
+        <td style="font-family:monospace;font-weight:700;">${safe(log.claim_id)}</td>
+        <td><span class="badge-status resolved">${safe(log.event_type)}</span></td>
+        <td style="max-width:330px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:.78rem;" title="${safe(JSON.stringify(log.payload))}">${safe(JSON.stringify(log.payload))}</td>
+      </tr>`).join('') : '<tr><td colspan="5" style="text-align:center;color:#64748b;">No complaint logs yet.</td></tr>';
+  } catch (error) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;color:#dc2626;">Could not load complaint logs: ${safe(error.message)}</td></tr>`;
+  }
+};
 
 window.cxLoadDbHistory = async function() {
   const tbody = document.getElementById('db-history-tbody');
